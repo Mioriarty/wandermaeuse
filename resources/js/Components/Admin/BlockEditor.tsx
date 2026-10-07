@@ -180,6 +180,16 @@ function BlockFields({
                                 <option value="left">links, Text rechts</option>
                                 <option value="right">rechts, Text links</option>
                             </select>
+                            <span className="label-xs mt-4 block text-graphite">Bildgröße</span>
+                            <select
+                                className={`${inputClass} mt-2`}
+                                value={str('size') || 'medium'}
+                                onChange={(e) => patch({ size: e.target.value })}
+                            >
+                                <option value="small">klein (ein Drittel)</option>
+                                <option value="medium">mittel</option>
+                                <option value="large">groß (gut die Hälfte)</option>
+                            </select>
                             <input
                                 className={`${inputClass} mt-4`}
                                 placeholder="Bildunterschrift (optional)"
