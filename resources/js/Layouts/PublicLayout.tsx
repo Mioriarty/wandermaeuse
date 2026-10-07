@@ -91,8 +91,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
                         <div>
                             <p className="font-display text-3xl leading-none sm:text-4xl">Wandermäuse</p>
                             <p className="mt-4 max-w-xs text-sm leading-relaxed text-graphite">
-                                Ein Reisetagebuch aus Süd- und Mittelamerika – mit Bildern, Karte
-                                und zu jedem Eintrag einer kleinen Komposition.
+                                Ein Reisetagebuch aus Süd- und Mittelamerika – mit Bildern und Karte.
                             </p>
                         </div>
                         <nav className="-my-3 flex flex-col" aria-label="Rechtliches">

@@ -7,7 +7,7 @@
 
     @php($seo = \App\Support\Seo::get())
     @php($title = $seo['title'] ?? 'Wandermäuse')
-    @php($description = $seo['description'] ?? 'Ein Reiseblog über unsere Reise durch Süd- und Mittelamerika – mit Karte, Bildern und einer kleinen Komposition zu jedem Eintrag.')
+    @php($description = $seo['description'] ?? 'Ein Reiseblog über unsere Reise durch Süd- und Mittelamerika – mit Karte und Bildern.')
 
     <title>{{ $title === 'Wandermäuse' ? $title : $title.' – Wandermäuse' }}</title>
     <meta name="description" content="{{ $description }}">

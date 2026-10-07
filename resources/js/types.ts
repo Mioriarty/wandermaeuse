@@ -58,7 +58,6 @@ export type PostCard = {
     readingMinutes: number;
     stop: { name: string; country: string } | null;
     cover: ImageProps | null;
-    hasComposition: boolean;
 };
 
 export type CommentProps = {

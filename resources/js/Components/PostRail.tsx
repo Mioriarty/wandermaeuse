@@ -86,7 +86,6 @@ export default function PostRail({ posts }: { posts: PostCardType[] }) {
                             <p className="label-xs mt-2 flex flex-wrap gap-x-3 gap-y-1 text-graphite">
                                 <span>{formatDate(post.publishedAt)}</span>
                                 {post.stop && <span>{post.stop.name}</span>}
-                                {post.hasComposition && <span className="text-accent">mit Komposition</span>}
                             </p>
 
                             {post.excerpt && (

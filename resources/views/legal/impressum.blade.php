@@ -32,7 +32,7 @@
 
 <h2>Urheberrecht</h2>
 <p>
-    Alle Texte, Fotografien und Kompositionen auf dieser Seite stammen von uns und sind
+    Alle Texte, Fotografien und sonstigen Inhalte auf dieser Seite stammen von uns und sind
     urheberrechtlich geschützt. Wenn du etwas davon verwenden möchtest, frag uns einfach –
     wir freuen uns über eine Nachricht.
 </p>

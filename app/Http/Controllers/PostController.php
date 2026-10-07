@@ -14,7 +14,7 @@ class PostController extends Controller
     public function index(): Response
     {
         $posts = Post::published()
-            ->with(['stop', 'coverMedia', 'composition'])
+            ->with(['stop', 'coverMedia'])
             ->latest('published_at')
             ->get();
 

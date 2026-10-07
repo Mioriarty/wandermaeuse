@@ -31,7 +31,6 @@ export default function PostCard({ post, index }: { post: PostCardType; index: n
                             </span>
                         )}
                         <span>{formatDate(post.publishedAt)}</span>
-                        {post.hasComposition && <span className="text-accent">mit Komposition</span>}
                     </div>
 
                     <h2 className="mt-3 font-display text-[clamp(1.75rem,3.5vw,2.75rem)] font-medium leading-[1.1] text-balance transition-colors group-hover:text-accent">

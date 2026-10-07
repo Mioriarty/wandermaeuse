@@ -14,7 +14,7 @@ class HomeController extends Controller
     public function __invoke(): Response
     {
         $posts = Post::published()
-            ->with(['stop', 'coverMedia', 'composition'])
+            ->with(['stop', 'coverMedia'])
             ->latest('published_at')
             ->take(4)
             ->get();
@@ -27,7 +27,7 @@ class HomeController extends Controller
 
         Seo::set(
             title: 'Wandermäuse',
-            description: 'Ein Reiseblog über unsere Reise durch Süd- und Mittelamerika – mit Karte, Bildern und einer kleinen Komposition zu jedem Eintrag.',
+            description: 'Ein Reiseblog über unsere Reise durch Süd- und Mittelamerika – mit Karte und Bildern.',
             image: $hero?->url() ?? $posts->first()?->coverMedia?->url(),
         );
 

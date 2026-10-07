@@ -119,7 +119,6 @@ class Post extends Model
                 'country' => $this->stop->country,
             ] : null,
             'cover' => $this->coverMedia?->toImageProps(),
-            'hasComposition' => $this->composition !== null,
         ];
     }
 }
