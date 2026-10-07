@@ -1,4 +1,5 @@
 import { Head, router, useForm } from '@inertiajs/react';
+import { useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Button, Field, Panel, inputClass } from '@/Components/Admin/Ui';
 import { formatShortDate } from '@/lib/format';
@@ -17,6 +18,7 @@ type Campaign = {
     intro: string | null;
     status: string;
     postTitle: string | null;
+    postExcerpt: string | null;
     recipientCount: number;
     sentCount: number;
     sentAt: string | null;
@@ -60,6 +62,7 @@ function suggestCampaign(post: PostOption): { subject: string; intro: string } {
 export default function Newsletter({ subscribers, campaigns, posts, mailableCount }: Props) {
     const form = useForm({ subject: '', intro: '', post_id: '' });
     const selectedPost = posts.find((post) => String(post.id) === form.data.post_id);
+    const [openCampaignId, setOpenCampaignId] = useState<number | null>(null);
 
     return (
         <AdminLayout title="Newsletter">
@@ -144,56 +147,76 @@ export default function Newsletter({ subscribers, campaigns, posts, mailableCoun
                             <p className="text-sm text-graphite">Noch keine Newsletter angelegt.</p>
                         ) : (
                             <ul className="flex flex-col">
-                                {campaigns.map((campaign) => (
-                                    <li key={campaign.id} className="hairline-b py-4 last:border-b-0">
-                                        <div className="flex flex-wrap items-start justify-between gap-3">
-                                            <div className="min-w-0">
-                                                <p className="font-medium">{campaign.subject}</p>
-                                                <p className="label-xs mt-1 text-graphite">
-                                                    {campaign.status === 'draft' && 'Entwurf'}
-                                                    {campaign.status === 'sending' &&
-                                                        `Wird versendet – ${campaign.sentCount} von ${campaign.recipientCount}`}
-                                                    {campaign.status === 'sent' &&
-                                                        `Versendet an ${campaign.sentCount} · ${formatShortDate(campaign.sentAt)}`}
-                                                    {campaign.postTitle && ` · verlinkt: ${campaign.postTitle}`}
-                                                </p>
-                                            </div>
-                                            <div className="flex gap-2">
-                                                {campaign.status === 'draft' && (
+                                {campaigns.map((campaign) => {
+                                    const open = openCampaignId === campaign.id;
+
+                                    return (
+                                        <li key={campaign.id} className="hairline-b py-4 last:border-b-0">
+                                            <div className="flex flex-wrap items-start justify-between gap-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setOpenCampaignId(open ? null : campaign.id)}
+                                                    aria-expanded={open}
+                                                    aria-controls={`campaign-${campaign.id}`}
+                                                    className="group flex min-w-0 flex-1 items-start gap-3 text-left"
+                                                >
+                                                    <span
+                                                        aria-hidden
+                                                        className={`mt-0.5 text-graphite transition-transform group-hover:text-accent ${open ? 'rotate-90' : ''}`}
+                                                    >
+                                                        ▸
+                                                    </span>
+                                                    <span className="min-w-0">
+                                                        <span className="block font-medium group-hover:text-accent">{campaign.subject}</span>
+                                                        <span className="label-xs mt-1 block text-graphite">
+                                                            {campaign.status === 'draft' && 'Entwurf'}
+                                                            {campaign.status === 'sending' &&
+                                                                `Wird versendet – ${campaign.sentCount} von ${campaign.recipientCount}`}
+                                                            {campaign.status === 'sent' &&
+                                                                `Versendet an ${campaign.sentCount} · ${formatShortDate(campaign.sentAt)}`}
+                                                            {campaign.postTitle && ` · verlinkt: ${campaign.postTitle}`}
+                                                        </span>
+                                                    </span>
+                                                </button>
+                                                <div className="flex gap-2">
+                                                    {campaign.status === 'draft' && (
+                                                        <Button
+                                                            onClick={() => {
+                                                                if (
+                                                                    window.confirm(
+                                                                        `Newsletter jetzt an ${mailableCount} bestätigte Empfänger senden?`,
+                                                                    )
+                                                                ) {
+                                                                    router.post(
+                                                                        `/admin/newsletter/${campaign.id}/senden`,
+                                                                        {},
+                                                                        { preserveScroll: true },
+                                                                    );
+                                                                }
+                                                            }}
+                                                        >
+                                                            Senden
+                                                        </Button>
+                                                    )}
                                                     <Button
+                                                        variant="danger"
                                                         onClick={() => {
-                                                            if (
-                                                                window.confirm(
-                                                                    `Newsletter jetzt an ${mailableCount} bestätigte Empfänger senden?`,
-                                                                )
-                                                            ) {
-                                                                router.post(
-                                                                    `/admin/newsletter/${campaign.id}/senden`,
-                                                                    {},
-                                                                    { preserveScroll: true },
-                                                                );
+                                                            if (window.confirm('Newsletter löschen?')) {
+                                                                router.delete(`/admin/newsletter/${campaign.id}`, {
+                                                                    preserveScroll: true,
+                                                                });
                                                             }
                                                         }}
                                                     >
-                                                        Senden
+                                                        Löschen
                                                     </Button>
-                                                )}
-                                                <Button
-                                                    variant="danger"
-                                                    onClick={() => {
-                                                        if (window.confirm('Newsletter löschen?')) {
-                                                            router.delete(`/admin/newsletter/${campaign.id}`, {
-                                                                preserveScroll: true,
-                                                            });
-                                                        }
-                                                    }}
-                                                >
-                                                    Löschen
-                                                </Button>
+                                                </div>
                                             </div>
-                                        </div>
-                                    </li>
-                                ))}
+
+                                            {open && <CampaignPreview id={`campaign-${campaign.id}`} campaign={campaign} />}
+                                        </li>
+                                    );
+                                })}
                             </ul>
                         )}
                     </Panel>
@@ -241,5 +264,39 @@ export default function Newsletter({ subscribers, campaigns, posts, mailableCoun
                 </Panel>
             </div>
         </AdminLayout>
+    );
+}
+
+/**
+ * The text of a saved newsletter, laid out like the mail itself
+ * (resources/views/mail/campaign.blade.php): intro, then the linked entry
+ * with its excerpt - skipped when the intro already quotes it - and the
+ * sign-off the template adds.
+ */
+function CampaignPreview({ id, campaign }: { id: string; campaign: Campaign }) {
+    const showExcerpt = campaign.postExcerpt && !(campaign.intro ?? '').includes(campaign.postExcerpt);
+
+    return (
+        <div id={id} className="hairline-t mt-4 ml-6 flex max-w-2xl flex-col gap-4 pt-4 text-sm leading-relaxed">
+            {campaign.intro ? (
+                <p className="whitespace-pre-line">{campaign.intro}</p>
+            ) : (
+                <p className="text-graphite">Keine Einleitung.</p>
+            )}
+
+            {campaign.postTitle && (
+                <div className="flex flex-col gap-2">
+                    <p className="font-medium">{campaign.postTitle}</p>
+                    {showExcerpt && <p>{campaign.postExcerpt}</p>}
+                    <p className="label-xs text-graphite">[ Knopf: Eintrag lesen ]</p>
+                </div>
+            )}
+
+            <p className="text-graphite">
+                Liebe Grüße
+                <br />
+                die Wandermäuse
+            </p>
+        </div>
     );
 }

@@ -31,6 +31,7 @@ class NewsletterController extends Controller
                 'intro' => $c->intro,
                 'status' => $c->status,
                 'postTitle' => $c->post?->title,
+                'postExcerpt' => $c->post?->excerpt,
                 'recipientCount' => $c->recipient_count,
                 'sentCount' => $c->sent_count,
                 'sentAt' => $c->sent_at?->toIso8601String(),
