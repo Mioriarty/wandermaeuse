@@ -7,9 +7,7 @@ automatisch.
 
 Der netcup-Webspace kann **kein** `npm run build` und **kein** `composer install`
 zuverlässig ausführen: Node gibt es erst ab Webhosting 4000, und Composer in der
-Shell scheitert je nach Paket am Speicherlimit. Außerdem werden netcups
-„Zusätzliche Bereitstellungsaktionen“ nicht auf allen Verträgen tatsächlich
-ausgeführt.
+Shell scheitert je nach Paket am Speicherlimit.
 
 Deshalb:
 
@@ -20,16 +18,21 @@ Deshalb:
   GitHub Actions   → Tests, composer install --no-dev, npm run build
         │
         ▼
-  Branch `deploy`  → fertiger Stand inklusive vendor/ und public/build/
-        │
+  rsync über SSH   → fertiger Stand inklusive vendor/ und public/build/
+        │             nach wandermaeuse.de/httpdocs
         ▼
-  netcup Git       → checkt `deploy` nach httpdocs/ aus
-        │
-        ▼
-  Cronjob          → merkt den neuen Commit und migriert beim nächsten Lauf
+  ssh … artisan    → wandermaeuse:post-deploy: Migrationen, Storage-Link, Caches
 ```
 
-Auf dem Webspace wird also nur noch ausgecheckt und `php artisan` ausgeführt.
+Auf dem Webspace wird also nur noch `php artisan` ausgeführt. Scheitert der
+letzte Schritt, holt der Cronjob ihn nach: er vergleicht die Datei `REVISION`,
+die der Workflow mitschickt, mit dem zuletzt abgeschlossenen Stand.
+
+Übertragen wird mit `--delete`: was auf dem Webspace liegt, aber nicht im
+gebauten Stand, verschwindet. Was bleiben muss – `.env`, alles unter
+`storage/`, der Symlink `public/storage` – ist in `deploy/rsync.filter`
+geschützt. Wer auf dem Webspace eine neue Datei ablegt, die einen Deploy
+überleben soll, trägt sie dort ein.
 
 ## 1. PHP-Version
 
@@ -105,18 +108,42 @@ Laravel darf nur den Ordner `public/` ausliefern – sonst liegen `.env` und
   Dokumentenstamm. Sonst kommt Laravel nicht an `vendor/` und `storage/` und
   die Seite bleibt weiß.
 
-## 3. Git-Deployment im WCP
+## 3. SSH-Zugang für GitHub
 
-- Repository: `https://github.com/Mioriarty/wandermaeuse.git`
-- Branch: **`deploy`** (nicht `main` – auf `main` fehlen `vendor/` und die
-  gebauten Assets)
-- Zielverzeichnis: `httpdocs`
-- Privates Repository: einen SSH-Schlüssel auf dem Webspace erzeugen und den
-  öffentlichen Teil auf GitHub als *Deploy Key* (nur Lesen) hinterlegen.
-  Zugangsdaten in der URL lehnt netcup ab.
-- Optional als Bereitstellungsaktion: `bash deploy/post-deploy.sh`.
-  Falls das nicht läuft, ist das nicht schlimm – der Cronjob aus Schritt 6
-  erledigt dasselbe.
+GitHub Actions meldet sich mit denselben SSH-Zugangsdaten an, die man auch
+selbst benutzt (Benutzer und Passwort aus dem WCP). Das Passwort reicht
+`sshpass` an `ssh` durch, über eine Umgebungsvariable, nie über die
+Kommandozeile.
+
+Für `SSH_KNOWN_HOSTS` einmalig auf dem eigenen Rechner:
+
+```sh
+ssh-keyscan dein-webspace
+```
+
+Dann im Repository unter *Settings → Secrets and variables → Actions*:
+
+| Secret | Inhalt |
+|---|---|
+| `SSH_HOST` | Hostname des Webspace |
+| `SSH_USER` | SSH-Benutzer |
+| `SSH_PASSWORD` | SSH-Passwort |
+| `SSH_PORT` | optional, nur wenn nicht 22 |
+| `SSH_KNOWN_HOSTS` | optional, die Ausgabe von `ssh-keyscan`. Ohne wird der Hostschlüssel bei jedem Lauf ungeprüft übernommen |
+
+Wird das SSH-Passwort im WCP geändert, muss `SSH_PASSWORD` mitgeändert werden,
+sonst scheitert der nächste Deploy.
+
+Ziel ist `wandermaeuse.de/httpdocs`, relativ zu dem Verzeichnis, in dem man
+nach dem Login landet (`DEPLOY_PATH` im Workflow).
+
+Das **Git-Deployment im WCP muss aus sein**, sonst überschreiben sich beide
+Wege gegenseitig. Ein altes `.git` in `httpdocs` stört nicht und darf gelöscht
+werden.
+
+Jetzt einmal den Workflow laufen lassen (*Actions → Build & Deploy → Run
+workflow*). Er spielt die Dateien ein und warnt, dass die `.env` noch fehlt –
+die kommt im nächsten Schritt.
 
 ## 4. Datenbank und Postfach
 
@@ -129,7 +156,7 @@ Laravel darf nur den Ordner `public/` ausliefern – sonst liegen `.env` und
 Die `.env` liegt **nicht** im Repository. Einmalig per SSH:
 
 ```sh
-cd ~/httpdocs
+cd wandermaeuse.de/httpdocs
 cp .env.example .env
 nano .env          # DB_*, MAIL_* und APP_URL eintragen
 
@@ -171,12 +198,10 @@ idempotent geschrieben: der Takt kommt vom Cronjob, nicht vom Ausdruck.
 `tests/Feature/ScheduleTest.php` hält das fest. Wenn der Cron später doch
 minutentaktig laufen darf, bleibt alles korrekt – es wird nur wieder pünktlich.
 
-## 7. GitHub
+## 7. Auf dem Webspace nichts von Hand ändern
 
-Es sind **keine** Secrets nötig: Der Workflow schreibt nur in das eigene
-Repository und nutzt dafür das automatisch bereitgestellte Token. Der Branch
-`deploy` wird bei jedem Build neu geschrieben (force push) – dort also niemals
-von Hand etwas ändern.
+Jeder Deploy gleicht `httpdocs` mit dem gebauten Stand ab. Von Hand geänderter
+Code ist beim nächsten Push wieder weg – Änderungen gehören ins Repository.
 
 ## Fehlersuche
 
@@ -188,9 +213,12 @@ von Hand etwas ändern.
 | Upload sagt „ist kein Bild“, obwohl es eins ist | Datei groesser als `upload_max_filesize` – PHP verwirft sie vor Laravel. Schritt 1a |
 | Upload mehrerer Bilder endet mit 419 Page Expired | Stapel groesser als `post_max_size` – PHP verwirft den Rumpf samt CSRF-Feld. Schritt 1a |
 | Neue Migration nicht eingespielt | `php artisan wandermaeuse:post-deploy` von Hand ausführen |
+| Deploy scheitert mit `Permission denied` | `SSH_USER` oder `SSH_PASSWORD` falsch, oder das Passwort wurde im WCP geändert. Schritt 3 |
+| Deploy scheitert mit `Host key verification failed` | `SSH_KNOWN_HOSTS` passt nicht mehr zum Server – neu per `ssh-keyscan` holen |
+| Deploy scheitert mit `rsync: command not found` | rsync fehlt auf dem Webspace – beim Hoster nachfragen |
+| Hochgeladene Datei nach Deploy weg | Liegt außerhalb von `storage/` – in `deploy/rsync.filter` schützen |
 | Newsletter bleibt bei „wird versendet“ | Cronjob läuft nicht – Schritt 6 prüfen |
 | Anmeldung zum Newsletter liefert 500, Log zeigt `535` | `MAIL_HOST`/`MAIL_USERNAME`/`MAIL_PASSWORD` falsch. `MAIL_HOST` muss der netcup-Mailserver sein (`dig +short MX wandermaeuse.de`), danach `php artisan config:clear` |
-| Composer-Fehler beim Deploy | Falscher Branch: netcup muss `deploy` ziehen, nicht `main` |
 
 ## Sicherungen
 
@@ -200,7 +228,7 @@ im Git-Repository und hängen allein an diesen Backups. Vor größeren Umbauten
 lohnt sich ein eigener Abzug:
 
 ```sh
-cd ~/httpdocs
+cd wandermaeuse.de/httpdocs
 tar czf ~/medien-$(date +%F).tar.gz storage/app/public
 php artisan db:show   # zeigt, welche Datenbank gesichert werden muss
 ```

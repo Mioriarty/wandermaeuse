@@ -28,3 +28,6 @@ Thumbs.db
 
 # Lokale Entwicklungsdatenbank
 /database/database.sqlite
+
+# Vom Deploy geschrieben, siehe .github/workflows/deploy.yml
+/REVISION

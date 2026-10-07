@@ -1,0 +1,31 @@
+# Regeln fuer das rsync in .github/workflows/deploy.yml.
+#
+# Der Deploy laeuft mit --delete: was auf dem Webspace liegt, aber nicht im
+# gebauten Stand, wird entfernt. Alles, was dort entsteht und bleiben muss,
+# ist deshalb hier geschuetzt. Die erste passende Regel gewinnt.
+#
+#   - Datei/Ordner   nicht hochladen; auf dem Webspace bleibt er unangetastet
+#   P Datei/Ordner   hochladen erlaubt, auf dem Webspace aber nie loeschen
+
+# Zugangsdaten - liegt nur auf dem Webspace.
+- /.env
+
+# Hochgeladene Fotos, Audio, Noten, Logs, Sessions, Caches. Aus dem Checkout
+# kommen hier nur die leeren Ordner mit ihren .gitignore-Dateien.
+P /storage/**
+
+# Der Symlink von storage:link (siehe wandermaeuse:post-deploy).
+- /public/storage
+
+# Zertifikatspruefungen von Let's Encrypt, falls netcup sie hier ablegt.
+P /public/.well-known
+
+# Ein .git aus der Zeit, als netcup selbst ausgecheckt hat, darf bleiben.
+- /.git
+
+# Nur fuer die Entwicklung.
+- /.github
+- /node_modules
+- /tests
+- /phpunit.xml
+- .DS_Store

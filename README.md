@@ -115,8 +115,8 @@ php artisan wandermaeuse:admin
 
 Der Webspace kann **kein** `npm run build` und **kein** `composer install`:
 Node gibt es erst ab Webhosting 4000, und Composer scheitert in der Shell am
-Speicherlimit. Deshalb baut GitHub Actions einen fertigen Stand und schiebt ihn
-auf den Branch `deploy` – netcup checkt nur noch aus.
+Speicherlimit. Deshalb baut GitHub Actions einen fertigen Stand und spielt ihn
+per SSH ein – auf dem Webspace läuft nur noch `php artisan`.
 
 ```
 git push auf main
@@ -125,13 +125,10 @@ git push auf main
 GitHub Actions   Tests, composer install --no-dev, npm run build
       │
       ▼
-Branch `deploy`  fertig, inklusive vendor/ und public/build/
-      │
+rsync über SSH   fertig, inklusive vendor/ und public/build/,
+      │          nach wandermaeuse.de/httpdocs
       ▼
-netcup Git       checkt `deploy` nach httpdocs/ aus
-      │
-      ▼
-Cronjob          migriert innerhalb einer Minute
+ssh … artisan    Migrationen, Storage-Link, Caches
 ```
 
 ## Einmalige Einrichtung
@@ -146,14 +143,12 @@ sonst liegen `.env` und `vendor/` offen im Web. Zusätzlich muss `open_basedir`
 den Ordner **`httpdocs`** umfassen, also den *über* dem Dokumentenstamm, sonst
 kommt Laravel nicht an `vendor/` und die Seite bleibt weiß.
 
-**3 – Git im WCP einrichten.**
-
-- Repository: `https://github.com/Mioriarty/wandermaeuse.git`
-- Branch: **`deploy`** ← nicht `main`, dort fehlen `vendor/` und die Assets
-- Zielverzeichnis: `httpdocs`
-- Für das private Repo einen SSH-Schlüssel auf dem Webspace erzeugen und den
-  öffentlichen Teil auf GitHub als *Deploy Key* (nur Lesen) hinterlegen.
-  Zugangsdaten in der URL lehnt netcup ab.
+**3 – SSH-Zugang für GitHub.** Die SSH-Zugangsdaten aus dem WCP im
+Repository unter *Settings → Secrets and variables → Actions* hinterlegen:
+`SSH_HOST`, `SSH_USER`, `SSH_PASSWORD`, optional `SSH_PORT` und
+`SSH_KNOWN_HOSTS`. Das Git-Deployment im WCP ausschalten. Danach den
+Workflow einmal von Hand starten, damit die Dateien liegen. Die einzelnen
+Befehle stehen in [DEPLOYMENT.md](DEPLOYMENT.md#3-ssh-zugang-für-github).
 
 **4 – Datenbank und Postfach anlegen.** Eine MySQL-Datenbank im WCP, dazu ein
 Postfach `newsletter@wandermaeuse.de` für die Bestätigungs- und Newsletter-Mails.
@@ -162,7 +157,7 @@ Postfach `newsletter@wandermaeuse.de` für die Bestätigungs- und Newsletter-Mai
 
 ```sh
 ssh dein-user@dein-webspace
-cd ~/httpdocs
+cd wandermaeuse.de/httpdocs
 cp .env.example .env
 nano .env     # DB_*, MAIL_* und APP_URL eintragen, APP_DEBUG=false
 
@@ -183,8 +178,6 @@ Migrationen nach einem Deploy, geplante Einträge veröffentlichen, alte
 IP-Prüfwerte löschen. Shared Hosting kann keine Dauerprozesse, deshalb kein
 Queue-Worker, sondern `queue:work --stop-when-empty` im Minutentakt.
 
-**7 – GitHub: nichts zu tun.** Es sind keine Secrets nötig, der Workflow
-schreibt nur ins eigene Repository.
 
 ## Danach
 
@@ -192,8 +185,9 @@ schreibt nur ins eigene Repository.
 git push        # auf main
 ```
 
-Der Rest läuft von allein. Auf dem Branch `deploy` **niemals** von Hand etwas
-ändern – der wird bei jedem Build überschrieben.
+Der Rest läuft von allein. In `httpdocs` **niemals** von Hand Code ändern –
+jeder Deploy gleicht den Ordner mit dem gebauten Stand ab. Was dort bleiben
+muss (`.env`, `storage/`), schützt `deploy/rsync.filter`.
 
 ## Wenn etwas klemmt
 
@@ -204,7 +198,7 @@ Der Rest läuft von allein. Auf dem Branch `deploy` **niemals** von Hand etwas
 | Bilder fehlen (404) | `php artisan storage:link` erneut ausführen |
 | Neue Migration fehlt | `php artisan wandermaeuse:post-deploy` von Hand ausführen |
 | Newsletter bleibt bei „wird versendet“ | Cronjob läuft nicht – Schritt 6 prüfen |
-| Composer-Fehler beim Deploy | Falscher Branch: netcup muss `deploy` ziehen, nicht `main` |
+| Deploy scheitert an SSH | Secrets aus Schritt 3 prüfen, Details in DEPLOYMENT.md |
 
 Mehr Hintergrund und die Sicherungsstrategie: [DEPLOYMENT.md](DEPLOYMENT.md).
 

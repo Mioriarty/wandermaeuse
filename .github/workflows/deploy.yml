@@ -1,17 +1,31 @@
 name: Build & Deploy
 
-# Baut einen fertig lauffähigen Stand und schiebt ihn auf den Branch `deploy`,
-# den netcup auscheckt. Auf dem Webspace wird dadurch weder Node noch Composer
-# gebraucht - beides ist dort unzuverlässig bis gar nicht vorhanden.
+# Baut einen fertig lauffähigen Stand und spielt ihn per SSH direkt nach
+# wandermaeuse.de/httpdocs ein. Auf dem Webspace wird dadurch weder Node noch
+# Composer gebraucht - beides ist dort unzuverlässig bis gar nicht vorhanden.
+#
+# Benötigte Secrets (Settings → Secrets and variables → Actions):
+#   SSH_HOST         Hostname des Webspace
+#   SSH_USER         SSH-Benutzer
+#   SSH_PASSWORD     SSH-Passwort
+#   SSH_PORT         optional, Standard 22
+#   SSH_KNOWN_HOSTS  optional, Ausgabe von `ssh-keyscan <host>`. Fehlt es, wird
+#                    der Hostschlüssel bei jedem Lauf blind übernommen.
 
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
+# Nicht abbrechen: ein halb übertragener Stand auf dem Webspace ist schlimmer
+# als ein Deploy, der ein paar Minuten wartet.
 concurrency:
   group: deploy
-  cancel-in-progress: true
+  cancel-in-progress: false
+
+env:
+  # Relativ zum Verzeichnis, in dem man nach dem SSH-Login landet.
+  DEPLOY_PATH: wandermaeuse.de/httpdocs
 
 jobs:
   test:
@@ -39,11 +53,11 @@ jobs:
       - run: php artisan test
 
   deploy:
-    name: Deploy-Branch bauen
+    name: Per SSH einspielen
     needs: test
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
     steps:
       - uses: actions/checkout@v5
 
@@ -67,29 +81,65 @@ jobs:
           npm ci
           npm run build
 
-      - name: Auf den Branch deploy schieben
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+      # Ohne .git auf dem Webspace erkennt wandermaeuse:post-deploy den
+      # neuen Stand an dieser Datei.
+      - name: Stand vermerken
+        run: echo "$GITHUB_SHA" > REVISION
 
-          # vendor/ und public/build/ stehen in der normalen .gitignore und
-          # müssen auf dem Deploy-Branch mit hinein - also wird sie ersetzt.
-          # Übrig bleibt nur, was wirklich draußen bleiben soll.
-          cat > .gitignore <<'EOF'
-          /node_modules
-          .env
-          *.log
-          .DS_Store
-          /database/database.sqlite
+      - name: SSH einrichten
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+          SSH_PORT: ${{ secrets.SSH_PORT }}
+          SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+        run: |
+          if [ -z "$SSH_HOST" ] || [ -z "$SSH_USER" ] || [ -z "$SSH_PASSWORD" ]; then
+            echo "::error::SSH_HOST, SSH_USER und SSH_PASSWORD müssen als Secrets hinterlegt sein."
+            exit 1
+          fi
+
+          # ssh fragt das Passwort nur interaktiv ab; sshpass reicht es aus
+          # der Umgebungsvariable SSHPASS durch, nie über die Kommandozeile.
+          sudo apt-get install -y -qq sshpass > /dev/null
+
+          install -m 700 -d ~/.ssh
+
+          if [ -n "$SSH_KNOWN_HOSTS" ]; then
+            printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+          else
+            echo "::warning::SSH_KNOWN_HOSTS fehlt - der Hostschlüssel wird ungeprüft übernommen."
+            ssh-keyscan -p "${SSH_PORT:-22}" "$SSH_HOST" > ~/.ssh/known_hosts
+          fi
+
+          # Ein Alias, damit rsync und ssh unten ohne Optionen auskommen.
+          cat > ~/.ssh/config <<EOF
+          Host webspace
+            HostName $SSH_HOST
+            User $SSH_USER
+            Port ${SSH_PORT:-22}
+            PubkeyAuthentication no
+            PreferredAuthentications keyboard-interactive,password
+            StrictHostKeyChecking yes
+            ServerAliveInterval 30
           EOF
 
-          # Bereits versionierte Dateien ignoriert .gitignore nicht mehr -
-          # die müssen weg, sonst landen sie auf dem Webspace.
-          rm -rf tests phpunit.xml .github
+      # --checksum statt Zeitstempel: der Checkout ist bei jedem Lauf frisch,
+      # nach Datum wäre also jede Datei neu. --delay-updates legt alles erst
+      # am Ende an seinen Platz, damit die Seite möglichst kurz einen Mischstand
+      # aus alt und neu sieht. Was nie angefasst werden darf (.env, Uploads,
+      # Logs), steht in deploy/rsync.filter.
+      - name: Dateien übertragen
+        env:
+          SSHPASS: ${{ secrets.SSH_PASSWORD }}
+        run: |
+          rsync -e 'sshpass -e ssh' -rlz --checksum --delete-delay --delay-updates \
+            --chmod=D755,F644 \
+            --filter='merge deploy/rsync.filter' \
+            ./ "webspace:$DEPLOY_PATH/"
 
-          git checkout --orphan deploy
-          # Ohne -f: die frisch geschriebene .gitignore soll gelten, sonst
-          # landet node_modules mit im Deploy-Branch.
-          git add -A
-          git commit -m "Build von ${GITHUB_SHA::7}"
-          git push --force origin deploy
+      - name: Migrationen und Caches
+        env:
+          SSHPASS: ${{ secrets.SSH_PASSWORD }}
+        run: |
+          sshpass -e ssh webspace "cd '$DEPLOY_PATH' && if [ -f .env ]; then php artisan wandermaeuse:post-deploy; else echo '::warning::.env fehlt auf dem Webspace - Einrichtung nach DEPLOYMENT.md Schritt 5 abschließen.'; fi"

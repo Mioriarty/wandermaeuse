@@ -6,18 +6,17 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Brings the app in line with whatever was just checked out.
+ * Brings the app in line with whatever was just deployed.
  *
- * netcup's Git integration can run this as a deployment action, but those
- * actions are known to silently not fire on some subscriptions. So the
- * scheduler also calls it every minute with --if-changed: it compares the
- * checked-out commit against the one we last finished, and only does work when
- * they differ. Either path gets the site migrated within a minute of a push.
+ * The GitHub Actions deploy runs this over SSH right after copying the files.
+ * Should that step fail halfway, the scheduler also calls it every minute with
+ * --if-changed: it compares the deployed commit against the one we last
+ * finished, and only does work when they differ.
  */
 class PostDeploy extends Command
 {
     protected $signature = 'wandermaeuse:post-deploy
-                            {--if-changed : Nur ausführen, wenn ein neuer Commit ausgecheckt wurde}';
+                            {--if-changed : Nur ausführen, wenn ein neuer Stand eingespielt wurde}';
 
     protected $description = 'Migrationen, Storage-Link und Caches nach einem Deploy';
 
@@ -99,6 +98,13 @@ class PostDeploy extends Command
 
     private function currentSha(): ?string
     {
+        // Written by the deploy workflow, which copies files without a .git.
+        $revision = base_path('REVISION');
+
+        if (is_readable($revision)) {
+            return trim((string) file_get_contents($revision)) ?: null;
+        }
+
         $head = base_path('.git/HEAD');
 
         if (! is_readable($head)) {
