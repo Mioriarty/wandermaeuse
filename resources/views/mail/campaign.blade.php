@@ -6,7 +6,8 @@
 @if ($post)
 ## {{ $post->title }}
 
-@if ($post->excerpt)
+{{-- A suggested intro already quotes the excerpt; do not print it twice. --}}
+@if ($post->excerpt && ! str_contains((string) $intro, $post->excerpt))
 {{ $post->excerpt }}
 @endif
 

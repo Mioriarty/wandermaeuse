@@ -7,6 +7,7 @@ use App\Mail\CampaignMail;
 use App\Mail\ConfirmSubscription;
 use App\Models\Campaign;
 use App\Models\CampaignSend;
+use App\Models\Post;
 use App\Models\Subscriber;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -140,5 +141,28 @@ class NewsletterTest extends TestCase
 
         Mail::assertNothingSent();
         $this->assertSame('abgemeldet', CampaignSend::first()->error);
+    }
+
+    public function test_an_excerpt_quoted_in_the_intro_is_not_repeated_below_it(): void
+    {
+        $post = Post::create([
+            'title' => 'Uyuni',
+            'slug' => 'uyuni',
+            'excerpt' => 'Salz, soweit man sehen kann.',
+            'status' => Post::STATUS_PUBLISHED,
+            'published_at' => now()->subHour(),
+        ]);
+        $subscriber = Subscriber::create(['email' => 'ja@example.org', 'confirmed_at' => now()]);
+
+        $quoted = Campaign::create([
+            'subject' => 'Neues aus Uyuni',
+            'intro' => "Hallo!\n\nSalz, soweit man sehen kann.",
+            'post_id' => $post->id,
+            'status' => 'draft',
+        ]);
+        $plain = Campaign::create(['subject' => 'Neu', 'intro' => 'Hallo!', 'post_id' => $post->id, 'status' => 'draft']);
+
+        $this->assertSame(1, substr_count((new CampaignMail($quoted, $subscriber))->render(), 'Salz, soweit man sehen kann.'));
+        $this->assertSame(1, substr_count((new CampaignMail($plain, $subscriber))->render(), 'Salz, soweit man sehen kann.'));
     }
 }

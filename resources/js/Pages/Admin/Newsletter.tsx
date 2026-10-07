@@ -22,15 +22,44 @@ type Campaign = {
     sentAt: string | null;
 };
 
+type PostOption = {
+    id: number;
+    title: string;
+    excerpt: string | null;
+    stop: { name: string; country: string } | null;
+};
+
 type Props = {
     subscribers: Subscriber[];
     campaigns: Campaign[];
-    posts: { id: number; title: string }[];
+    posts: PostOption[];
     mailableCount: number;
 };
 
+/**
+ * A warm starting point for announcing an entry. Only a suggestion: it lands
+ * in the form fields and is meant to be edited before saving.
+ */
+function suggestCampaign(post: PostOption): { subject: string; intro: string } {
+    const place = post.stop ? `${post.stop.name}, ${post.stop.country}` : null;
+
+    const subject = post.stop ? `Neues aus ${post.stop.name}: ${post.title}` : `Neu im Reiseblog: ${post.title}`;
+
+    const paragraphs = [
+        'Hallo und schön, dass du dabei bist!',
+        place
+            ? `Unser neuer Eintrag „${post.title}“ ist online – diesmal melden wir uns aus ${place}.`
+            : `Unser neuer Eintrag „${post.title}“ ist online, frisch von unterwegs.`,
+        post.excerpt?.trim(),
+        'Mach es dir gemütlich, hol dir einen Kaffee und komm ein Stück mit uns mit. Wir freuen uns riesig, wenn du reinliest – und noch mehr über ein paar Zeilen von dir in den Kommentaren.',
+    ];
+
+    return { subject, intro: paragraphs.filter(Boolean).join('\n\n') };
+}
+
 export default function Newsletter({ subscribers, campaigns, posts, mailableCount }: Props) {
     const form = useForm({ subject: '', intro: '', post_id: '' });
+    const selectedPost = posts.find((post) => String(post.id) === form.data.post_id);
 
     return (
         <AdminLayout title="Newsletter">
@@ -70,7 +99,7 @@ export default function Newsletter({ subscribers, campaigns, posts, mailableCoun
                             <Field
                                 label="Eintrag verlinken"
                                 error={form.errors.post_id}
-                                hint="Titel, Anriss und ein Knopf zum Lesen werden automatisch eingefügt."
+                                hint="Titel, Anriss und ein Knopf zum Lesen werden automatisch eingefügt. „Text vorschlagen“ füllt Betreff und Einleitung passend zum Eintrag."
                             >
                                 <select
                                     className={inputClass}
@@ -86,7 +115,23 @@ export default function Newsletter({ subscribers, campaigns, posts, mailableCoun
                                 </select>
                             </Field>
 
-                            <div className="flex justify-end">
+                            <div className="flex justify-between gap-2">
+                                <Button
+                                    variant="ghost"
+                                    disabled={!selectedPost}
+                                    onClick={() => {
+                                        if (!selectedPost) return;
+                                        if (
+                                            (form.data.subject || form.data.intro) &&
+                                            !window.confirm('Betreff und Einleitung durch einen Vorschlag ersetzen?')
+                                        ) {
+                                            return;
+                                        }
+                                        form.setData({ ...form.data, ...suggestCampaign(selectedPost) });
+                                    }}
+                                >
+                                    Text vorschlagen
+                                </Button>
                                 <Button type="submit" disabled={form.processing}>
                                     Als Entwurf speichern
                                 </Button>

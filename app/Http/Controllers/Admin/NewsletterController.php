@@ -35,7 +35,12 @@ class NewsletterController extends Controller
                 'sentCount' => $c->sent_count,
                 'sentAt' => $c->sent_at?->toIso8601String(),
             ])->all(),
-            'posts' => Post::published()->latest('published_at')->get(['id', 'title'])->all(),
+            'posts' => Post::published()->with('stop')->latest('published_at')->get()->map(fn (Post $p) => [
+                'id' => $p->id,
+                'title' => $p->title,
+                'excerpt' => $p->excerpt,
+                'stop' => $p->stop ? ['name' => $p->stop->name, 'country' => $p->stop->country] : null,
+            ])->all(),
             'mailableCount' => Subscriber::mailable()->count(),
         ]);
     }
