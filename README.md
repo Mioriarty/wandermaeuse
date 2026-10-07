@@ -125,8 +125,8 @@ git push auf main
 GitHub Actions   Tests, composer install --no-dev, npm run build
       │
       ▼
-rsync über SSH   fertig, inklusive vendor/ und public/build/,
-      │          nach wandermaeuse.de/httpdocs
+tar über SSH     fertig, inklusive vendor/ und public/build/,
+      │          nach /wandermaeuse.de/httpdocs
       ▼
 ssh … artisan    Migrationen, Storage-Link, Caches
 ```
@@ -186,8 +186,8 @@ git push        # auf main
 ```
 
 Der Rest läuft von allein. In `httpdocs` **niemals** von Hand Code ändern –
-jeder Deploy gleicht den Ordner mit dem gebauten Stand ab. Was dort bleiben
-muss (`.env`, `storage/`), schützt `deploy/rsync.filter`.
+jeder Deploy überschreibt ihn mit dem gebauten Stand. `.env` und alles unter
+`storage/` fasst er nie an.
 
 ## Wenn etwas klemmt
 

@@ -88,6 +88,9 @@ jobs:
       - name: Stand vermerken
         run: echo "$GITHUB_SHA" > REVISION
 
+      - name: Archiv packen
+        run: bash deploy/package.sh "$RUNNER_TEMP/release.tar"
+
       - name: SSH einrichten
         env:
           SSH_HOST: ${{ secrets.SSH_HOST }}
@@ -114,7 +117,7 @@ jobs:
             ssh-keyscan -p "${SSH_PORT:-22}" "$SSH_HOST" > ~/.ssh/known_hosts
           fi
 
-          # Ein Alias, damit rsync und ssh unten ohne Optionen auskommen.
+          # Ein Alias, damit die ssh-Aufrufe unten ohne Optionen auskommen.
           cat > ~/.ssh/config <<EOF
           Host webspace
             HostName $SSH_HOST
@@ -126,7 +129,7 @@ jobs:
             ServerAliveInterval 30
           EOF
 
-      # Scheitert lieber hier mit einer lesbaren Meldung als mitten in rsync.
+      # Scheitert lieber hier mit einer lesbaren Meldung als mitten im Hochladen.
       - name: Zielordner prüfen
         env:
           SSHPASS: ${{ secrets.SSH_PASSWORD }}
@@ -141,19 +144,22 @@ jobs:
             exit 1
           }
 
-      # --checksum statt Zeitstempel: der Checkout ist bei jedem Lauf frisch,
-      # nach Datum wäre also jede Datei neu. --delay-updates legt alles erst
-      # am Ende an seinen Platz, damit die Seite möglichst kurz einen Mischstand
-      # aus alt und neu sieht. Was nie angefasst werden darf (.env, Uploads,
-      # Logs), steht in deploy/rsync.filter.
-      - name: Dateien übertragen
+      # Auf dem Webspace gibt es kein rsync, wohl aber PHP. Also nimmt PHP das
+      # Archiv von stdin entgegen, und deploy/install.php spielt es ein (Ablauf
+      # dort). -C komprimiert unterwegs, ohne dass der Webspace gzip braucht.
+      - name: Archiv hochladen
         env:
           SSHPASS: ${{ secrets.SSH_PASSWORD }}
         run: |
-          rsync -e 'sshpass -e ssh' -rlz --checksum --delete-delay --delay-updates \
-            --chmod=D755,F644 \
-            --filter='merge deploy/rsync.filter' \
-            ./ "webspace:$DEPLOY_PATH/"
+          sshpass -e ssh -C webspace \
+            "php -r 'stream_copy_to_stream(STDIN, fopen(\$argv[1], \"wb\"));' '$DEPLOY_PATH/.deploy-upload.tar'" \
+            < "$RUNNER_TEMP/release.tar"
+
+      - name: Einspielen
+        env:
+          SSHPASS: ${{ secrets.SSH_PASSWORD }}
+        run: |
+          sshpass -e ssh webspace "php -- '$DEPLOY_PATH/.deploy-upload.tar' '$DEPLOY_PATH'" < deploy/install.php
 
       - name: Migrationen und Caches
         env:

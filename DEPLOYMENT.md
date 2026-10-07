@@ -18,9 +18,9 @@ Deshalb:
   GitHub Actions   → Tests, composer install --no-dev, npm run build
         │
         ▼
-  rsync über SSH   → fertiger Stand inklusive vendor/ und public/build/
-        │             nach wandermaeuse.de/httpdocs
-        ▼
+  tar über SSH     → fertiger Stand inklusive vendor/ und public/build/,
+        │             von deploy/install.php nach /wandermaeuse.de/httpdocs
+        ▼             eingespielt
   ssh … artisan    → wandermaeuse:post-deploy: Migrationen, Storage-Link, Caches
 ```
 
@@ -28,11 +28,20 @@ Auf dem Webspace wird also nur noch `php artisan` ausgeführt. Scheitert der
 letzte Schritt, holt der Cronjob ihn nach: er vergleicht die Datei `REVISION`,
 die der Workflow mitschickt, mit dem zuletzt abgeschlossenen Stand.
 
-Übertragen wird mit `--delete`: was auf dem Webspace liegt, aber nicht im
-gebauten Stand, verschwindet. Was bleiben muss – `.env`, alles unter
-`storage/`, der Symlink `public/storage` – ist in `deploy/rsync.filter`
-geschützt. Wer auf dem Webspace eine neue Datei ablegt, die einen Deploy
-überleben soll, trägt sie dort ein.
+Auf dem Webspace gibt es kein `rsync` – aber PHP. Deshalb packt
+`deploy/package.sh` den Stand in ein tar-Archiv, PHP nimmt es per SSH
+entgegen, und `deploy/install.php` (ebenfalls per SSH an PHP gereicht) spielt
+es ein: erst in einen Zwischenordner entpacken, dann jede Datei per
+Umbenennen an ihren Platz – die Seite sieht so nur einen Augenblick lang einen
+Mischstand.
+
+Jedes Archiv enthält eine Dateiliste, `.deploy-manifest`. Gelöscht wird nur,
+was in der Liste des vorigen Deploys stand und in der neuen fehlt. Alles, was
+auf dem Webspace selbst entsteht – `.env`, Uploads und Logs unter `storage/`,
+der Symlink `public/storage` – stand nie in einer Liste und bleibt deshalb
+immer unangetastet. Dateien aus der Zeit vor diesem Verfahren (etwa vom
+alten Git-Deployment) werden ebenfalls nie gelöscht; die kann man einmalig
+von Hand wegräumen.
 
 ## 1. PHP-Version
 
@@ -218,8 +227,8 @@ Code ist beim nächsten Push wieder weg – Änderungen gehören ins Repository.
 | Neue Migration nicht eingespielt | `php artisan wandermaeuse:post-deploy` von Hand ausführen |
 | Deploy scheitert mit `Permission denied` | `SSH_USER` oder `SSH_PASSWORD` falsch, oder das Passwort wurde im WCP geändert. Schritt 3 |
 | Deploy scheitert mit `Host key verification failed` | `SSH_KNOWN_HOSTS` passt nicht mehr zum Server – neu per `ssh-keyscan` holen |
-| Deploy scheitert mit `rsync: command not found` | rsync fehlt auf dem Webspace – beim Hoster nachfragen |
-| Hochgeladene Datei nach Deploy weg | Liegt außerhalb von `storage/` – in `deploy/rsync.filter` schützen |
+| Deploy scheitert mit „Die PHP-Erweiterung phar fehlt“ | Im WCP unter *PHP-Einstellungen* die Erweiterung `phar` einschalten |
+| Deploy bricht ab, `.deploy-staging` bleibt liegen | Harmlos – der nächste Deploy räumt ihn weg |
 | Newsletter bleibt bei „wird versendet“ | Cronjob läuft nicht – Schritt 6 prüfen |
 | Anmeldung zum Newsletter liefert 500, Log zeigt `535` | `MAIL_HOST`/`MAIL_USERNAME`/`MAIL_PASSWORD` falsch. `MAIL_HOST` muss der netcup-Mailserver sein (`dig +short MX wandermaeuse.de`), danach `php artisan config:clear` |
 

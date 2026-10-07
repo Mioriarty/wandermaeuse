@@ -31,3 +31,4 @@ Thumbs.db
 
 # Vom Deploy geschrieben, siehe .github/workflows/deploy.yml
 /REVISION
+/.deploy-manifest
