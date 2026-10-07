@@ -132,8 +132,12 @@ jobs:
           SSHPASS: ${{ secrets.SSH_PASSWORD }}
         run: |
           sshpass -e ssh webspace "test -d '$DEPLOY_PATH'" || {
-            echo "::error::$DEPLOY_PATH gibt es auf dem Webspace nicht. Nach dem Login sieht es so aus:"
-            sshpass -e ssh webspace 'echo "pwd: $(pwd)"; ls -la /'
+            # Als Annotation statt nur im Log, damit es oben in der
+            # Zusammenfassung des Laufs steht.
+            out=$(sshpass -e ssh webspace 'echo "pwd: $(pwd)"; echo "HOME: $HOME"; echo "--- ls -la /"; ls -la /; echo "--- ls -la ."; ls -la .' 2>&1)
+            out="${out//'%'/'%25'}"
+            out="${out//$'\n'/'%0A'}"
+            echo "::error title=$DEPLOY_PATH nicht gefunden::$out"
             exit 1
           }
 
