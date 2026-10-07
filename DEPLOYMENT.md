@@ -134,8 +134,11 @@ Dann im Repository unter *Settings → Secrets and variables → Actions*:
 Wird das SSH-Passwort im WCP geändert, muss `SSH_PASSWORD` mitgeändert werden,
 sonst scheitert der nächste Deploy.
 
-Ziel ist `wandermaeuse.de/httpdocs`, relativ zu dem Verzeichnis, in dem man
-nach dem Login landet (`DEPLOY_PATH` im Workflow).
+Ziel ist `/wandermaeuse.de/httpdocs` (`DEPLOY_PATH` im Workflow). Nach dem
+SSH-Login ist man in einer abgeschotteten Umgebung: `/` ist dort die oberste
+Ebene, `cd ..` führt nicht weiter hinaus, und darin liegt `wandermaeuse.de`.
+Der Pfad muss absolut sein – ein relativer hinge vom Home-Verzeichnis ab, und
+das ist nicht `/`.
 
 Das **Git-Deployment im WCP muss aus sein**, sonst überschreiben sich beide
 Wege gegenseitig. Ein altes `.git` in `httpdocs` stört nicht und darf gelöscht
@@ -156,7 +159,7 @@ die kommt im nächsten Schritt.
 Die `.env` liegt **nicht** im Repository. Einmalig per SSH:
 
 ```sh
-cd wandermaeuse.de/httpdocs
+cd /wandermaeuse.de/httpdocs
 cp .env.example .env
 nano .env          # DB_*, MAIL_* und APP_URL eintragen
 
@@ -228,7 +231,7 @@ im Git-Repository und hängen allein an diesen Backups. Vor größeren Umbauten
 lohnt sich ein eigener Abzug:
 
 ```sh
-cd wandermaeuse.de/httpdocs
+cd /wandermaeuse.de/httpdocs
 tar czf ~/medien-$(date +%F).tar.gz storage/app/public
 php artisan db:show   # zeigt, welche Datenbank gesichert werden muss
 ```

@@ -24,8 +24,10 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  # Relativ zum Verzeichnis, in dem man nach dem SSH-Login landet.
-  DEPLOY_PATH: wandermaeuse.de/httpdocs
+  # Absolut: nach dem SSH-Login ist man in einer abgeschotteten Umgebung, deren
+  # Wurzel / den Ordner wandermaeuse.de enthält. Ein relativer Pfad hinge vom
+  # Home-Verzeichnis ab, und das zeigt bei netcup nicht dorthin.
+  DEPLOY_PATH: /wandermaeuse.de/httpdocs
 
 jobs:
   test:
@@ -123,6 +125,17 @@ jobs:
             StrictHostKeyChecking yes
             ServerAliveInterval 30
           EOF
+
+      # Scheitert lieber hier mit einer lesbaren Meldung als mitten in rsync.
+      - name: Zielordner prüfen
+        env:
+          SSHPASS: ${{ secrets.SSH_PASSWORD }}
+        run: |
+          sshpass -e ssh webspace "test -d '$DEPLOY_PATH'" || {
+            echo "::error::$DEPLOY_PATH gibt es auf dem Webspace nicht. Nach dem Login sieht es so aus:"
+            sshpass -e ssh webspace 'echo "pwd: $(pwd)"; ls -la /'
+            exit 1
+          }
 
       # --checksum statt Zeitstempel: der Checkout ist bei jedem Lauf frisch,
       # nach Datum wäre also jede Datei neu. --delay-updates legt alles erst

@@ -157,7 +157,7 @@ Postfach `newsletter@wandermaeuse.de` für die Bestätigungs- und Newsletter-Mai
 
 ```sh
 ssh dein-user@dein-webspace
-cd wandermaeuse.de/httpdocs
+cd /wandermaeuse.de/httpdocs
 cp .env.example .env
 nano .env     # DB_*, MAIL_* und APP_URL eintragen, APP_DEBUG=false
 

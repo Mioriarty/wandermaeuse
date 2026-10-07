@@ -40,7 +40,7 @@ netcup Shared Hosting, kein Root, keine Dauerprozesse:
 - Kein Queue-Worker. Alles Wiederkehrende hängt am Scheduler in
   `routes/console.php`, den ein Cronjob jede Minute anstößt.
 - Node und Composer laufen dort nicht. Gebaut wird in GitHub Actions, der
-  fertige Stand geht per rsync über SSH nach `wandermaeuse.de/httpdocs`
+  fertige Stand geht per rsync über SSH nach `/wandermaeuse.de/httpdocs`
   (Zugangsdaten in den GitHub-Secrets). Der Abgleich löscht dort alles, was
   nicht im Build ist – was bleiben muss, steht in `deploy/rsync.filter`.
   Details in `DEPLOYMENT.md`.
