@@ -22,6 +22,15 @@ class Post extends Model
 
     protected $guarded = [];
 
+    protected static function booted(): void
+    {
+        // The database cascades comments away on its own, but their photos
+        // only leave the disk when Eloquent deletes them. See Comment::booted.
+        static::deleting(function (Post $post) {
+            $post->comments()->whereNull('parent_id')->get()->each->delete();
+        });
+    }
+
     protected function casts(): array
     {
         return [

@@ -79,11 +79,30 @@ class DemoTripSeeder extends Seeder
             ]);
         }
 
-        Comment::create([
+        $jonas = Comment::create([
             'post_id' => $lima->id,
             'author_name' => 'Jonas',
             'body' => 'Das Stück zu Lima ist großartig. Gibt es die Noten irgendwo?',
             'created_at' => $lima->published_at?->addDays(2),
+        ]);
+
+        // A short thread, so replies have something to show while building.
+        $answer = Comment::create([
+            'post_id' => $lima->id,
+            'parent_id' => $jonas->id,
+            'reply_to_id' => $jonas->id,
+            'author_name' => 'Mira',
+            'body' => 'Die würden mich auch interessieren!',
+            'created_at' => $lima->published_at?->addDays(3),
+        ]);
+
+        Comment::create([
+            'post_id' => $lima->id,
+            'parent_id' => $jonas->id,
+            'reply_to_id' => $answer->id,
+            'author_name' => 'Oma Christa',
+            'body' => 'Ich hätte gern einen Ausdruck für das Klavier.',
+            'created_at' => $lima->published_at?->addDays(4),
         ]);
 
         Subscriber::create([

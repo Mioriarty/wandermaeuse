@@ -41,7 +41,7 @@ class PostController extends Controller
     {
         $query = Post::query()
             ->where('slug', $slug)
-            ->with(['stop', 'coverMedia', 'composition', 'blocks', 'comments']);
+            ->with(['stop', 'coverMedia', 'composition', 'blocks']);
 
         // Angemeldet heisst Vorschau: ein Entwurf laesst sich unter seiner
         // spaeteren Adresse ansehen, bevor er jemand anderem gehoert. Fuer
@@ -88,7 +88,13 @@ class PostController extends Controller
             'isPreview' => $isPreview,
             'blocks' => $post->blocksWithMedia(),
             'composition' => $post->composition?->toPlayerProps(),
-            'comments' => $post->comments->map->toPublicProps()->all(),
+            // Threads, not a flat list: each first comment carries its replies.
+            'comments' => $post->comments()
+                ->whereNull('parent_id')
+                ->with(['images', 'replies.images', 'replies.replyTo'])
+                ->get()
+                ->map->toPublicProps()
+                ->all(),
             // The whole path, so the reader always sees where this entry sits.
             'stops' => Stop::orderBy('position')->get()->map->toMapProps()->all(),
             'neighbours' => [

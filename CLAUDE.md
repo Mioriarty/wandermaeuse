@@ -66,6 +66,13 @@ netcup Shared Hosting, kein Root, keine Dauerprozesse:
   Seeder holt sie einmal von Wikimedia Commons (`DemoPhotoLibrary`) und legt
   sie unter `storage/app/private/demo-photos` ab, danach geht es offline. Ohne
   Netz treten farbige Platzhalter an ihre Stelle, Seeden scheitert nie daran.
+- Kommentare sind eine Ebene tief verschachtelt (`parent_id` = erster Kommentar
+  des Threads, `reply_to_id` = der beantwortete). Bilder von Lesern liegen in
+  `comment_images`, bewusst getrennt von `media`, und werden in
+  `CommentImageService` immer neu als WebP kodiert – nie die Originaldatei
+  ablegen, sonst bleiben GPS-Daten und angehängter Code erhalten. Kommentare
+  einzeln über Eloquent löschen, nicht per Query, sonst bleiben die Dateien
+  liegen.
 - Newsletter: Double Opt-in ist in Deutschland Pflicht. Unbestätigte Adressen
   dürfen nie eine Kampagne bekommen (`Subscriber::scopeMailable`).
 - Vor dem Commit: `php artisan test` und `npx tsc --noEmit`.

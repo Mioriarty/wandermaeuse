@@ -3,12 +3,16 @@ import { useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Button } from '@/Components/Admin/Ui';
 import { formatShortDate } from '@/lib/format';
+import type { CommentImageProps } from '@/types';
 
 type Row = {
     id: number;
     authorName: string;
     authorEmail: string | null;
     body: string;
+    replyToName: string | null;
+    replyCount: number;
+    images: CommentImageProps[];
     createdAt: string | null;
     post: { title: string; slug: string } | null;
 };
@@ -22,7 +26,7 @@ export default function Comments({ comments }: { comments: Paginated }) {
         setSelected((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
 
     const deleteSelected = () => {
-        if (!window.confirm(`${selected.length} Kommentar(e) wirklich löschen?`)) return;
+        if (!window.confirm(`${selected.length} Kommentar(e) samt Antworten wirklich löschen?`)) return;
         router.delete('/admin/kommentare', {
             data: { ids: selected },
             preserveScroll: true,
@@ -65,12 +69,22 @@ export default function Comments({ comments }: { comments: Paginated }) {
                             <p className="label-xs text-graphite">
                                 <span className="text-ink">{comment.authorName}</span>
                                 {comment.authorEmail && <> · {comment.authorEmail}</>}
+                                {comment.replyToName && <> · Antwort an {comment.replyToName}</>}
                                 {comment.post && <> · zu „{comment.post.title}“</>} ·{' '}
                                 {formatShortDate(comment.createdAt)}
                             </p>
                             <p className="mt-2 text-sm leading-relaxed whitespace-pre-line text-ink-soft">
                                 {comment.body}
                             </p>
+                            {comment.images.length > 0 && (
+                                <div className="mt-3 flex gap-2">
+                                    {comment.images.map((image) => (
+                                        <a key={image.id} href={image.src} target="_blank" rel="noopener">
+                                            <img src={image.thumb} alt="" className="h-20 w-20 object-cover" />
+                                        </a>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                         <div className="flex shrink-0 flex-col gap-2">
                             {comment.post && (
@@ -86,7 +100,13 @@ export default function Comments({ comments }: { comments: Paginated }) {
                             <Button
                                 variant="danger"
                                 onClick={() => {
-                                    if (window.confirm('Diesen Kommentar löschen?')) {
+                                    const replies =
+                                        comment.replyCount === 0
+                                            ? ''
+                                            : comment.replyCount === 1
+                                              ? ' Die Antwort darauf wird mit gelöscht.'
+                                              : ` Die ${comment.replyCount} Antworten darauf werden mit gelöscht.`;
+                                    if (window.confirm(`Diesen Kommentar löschen?${replies}`)) {
                                         router.delete(`/admin/kommentare/${comment.id}`, { preserveScroll: true });
                                     }
                                 }}

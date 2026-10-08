@@ -60,11 +60,24 @@ export type PostCard = {
     cover: ImageProps | null;
 };
 
+export type CommentImageProps = {
+    id: number;
+    src: string;
+    thumb: string;
+    width: number;
+    height: number;
+};
+
 export type CommentProps = {
     id: number;
     authorName: string;
     body: string;
     createdAt: string | null;
+    /** Only set when a reply answers another reply, not the thread's first comment. */
+    replyToName: string | null;
+    images: CommentImageProps[];
+    /** Always empty on a reply: threads are one level deep. */
+    replies: CommentProps[];
 };
 
 export type SharedProps = {

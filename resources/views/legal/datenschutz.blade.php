@@ -36,6 +36,13 @@
     sieben Tagen automatisch gelöscht. Rechtsgrundlage ist Art. 6 Abs. 1 lit. a und lit. f
     DSGVO. Du kannst uns jederzeit schreiben, wenn dein Kommentar gelöscht werden soll.
 </p>
+<p>
+    Fotos, die du einem Kommentar beifügst, sind zusammen mit ihm öffentlich zu sehen. Wir
+    speichern nicht die hochgeladene Datei selbst, sondern eine neu erzeugte, verkleinerte
+    Fassung. Dabei gehen alle eingebetteten Metadaten verloren, also auch Aufnahmeort,
+    Aufnahmezeitpunkt und Kameramodell. Den ursprünglichen Dateinamen speichern wir nicht.
+    Wird der Kommentar gelöscht, löschen wir die Fotos mit.
+</p>
 
 <h2>Newsletter</h2>
 <p>
