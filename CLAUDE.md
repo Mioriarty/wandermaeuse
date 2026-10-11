@@ -14,8 +14,10 @@ Reiseblog auf Laravel 13 + Inertia 3 + React 19 + TypeScript + Tailwind 4.
 
 - Die acht Layout-Muster eines Eintrags: `app/Enums/BlockType.php` plus je eine
   Komponente in `resources/js/Components/Blocks/`. Ein neues Muster heißt: ein
-  Case im Enum, eine Komponente, ein Eintrag in `Blocks/index.tsx` und ein Fall
-  in `BlockEditor.tsx` – sonst nichts.
+  Case im Enum, eine Komponente, ein Eintrag in `Blocks/index.tsx`, ein Fall
+  in `BlockEditor.tsx`, eine Skizze in `BlockTypeDialog.tsx` und eine Zeile in
+  `blockConversion.ts` (was das Muster fasst, fürs Umwandeln zwischen Typen) –
+  sonst nichts. `tsc` meldet, wenn eins davon fehlt.
 - Einzelne Stellschrauben der Seite liegen als Schluessel und Wert in der
   Tabelle `settings` (`App\Models\Setting`). Bisher steht dort nur das
   Titelbild der Startseite, waehlbar unter `/admin/startseite`. Welches Bild

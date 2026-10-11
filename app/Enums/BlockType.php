@@ -8,7 +8,8 @@ namespace App\Enums;
  * The set is deliberately closed: every pattern has one defined mobile
  * behaviour, so a post can never be arranged into something that breaks on a
  * phone. Adding a ninth pattern means adding a case here, a React component in
- * resources/js/Components/Blocks, and an editor form - nothing else.
+ * resources/js/Components/Blocks, and an editor form, sketch and conversion
+ * entry in resources/js/Components/Admin - nothing else.
  */
 enum BlockType: string
 {

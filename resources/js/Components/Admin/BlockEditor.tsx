@@ -1,6 +1,9 @@
-import { Button, inputClass } from '@/Components/Admin/Ui';
+import { useState } from 'react';
+import { inputClass } from '@/Components/Admin/Ui';
 import MediaPicker, { MultiMediaPicker } from '@/Components/Admin/MediaPicker';
 import RichText from '@/Components/Admin/RichText';
+import BlockTypeDialog from '@/Components/Admin/BlockTypeDialog';
+import { convertBlock } from '@/Components/Admin/blockConversion';
 import type { BlockType, ImageProps } from '@/types';
 
 export type EditorBlock = {
@@ -23,17 +26,29 @@ type Props = {
 };
 
 export default function BlockEditor({ blocks, onChange, blockTypes, library }: Props) {
-    const add = (option: BlockTypeOption) => {
-        onChange([
-            ...blocks,
-            {
-                key: `new-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-                type: option.value,
-                // Structured clone so two blocks of the same type never end up
-                // sharing one data object.
-                data: structuredClone(option.blank),
-            },
-        ]);
+    // Which dialog is open: adding a section before `index`, or converting
+    // the section at `index` into another pattern.
+    const [dialog, setDialog] = useState<{ mode: 'add' | 'convert'; index: number } | null>(null);
+
+    const blankFor = (type: BlockType) => blockTypes.find((t) => t.value === type)?.blank ?? {};
+
+    const insert = (index: number, type: BlockType) => {
+        const next = [...blocks];
+        next.splice(index, 0, {
+            key: `new-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+            type,
+            // Structured clone so two blocks of the same type never end up
+            // sharing one data object.
+            data: structuredClone(blankFor(type)),
+        });
+        onChange(next);
+    };
+
+    const convert = (index: number, type: BlockType) => {
+        const block = blocks[index];
+        const next = [...blocks];
+        next[index] = { ...block, type, data: convertBlock(block.type, block.data, type, blankFor(type)).data };
+        onChange(next);
     };
 
     const patch = (index: number, data: Record<string, unknown>) => {
@@ -55,57 +70,106 @@ export default function BlockEditor({ blocks, onChange, blockTypes, library }: P
         onChange(blocks.filter((_, i) => i !== index));
     };
 
+    const converting = dialog?.mode === 'convert' ? blocks[dialog.index] : null;
+
     return (
         <div>
-            <ol className="flex flex-col gap-4">
+            <ol>
                 {blocks.map((block, index) => {
                     const label = blockTypes.find((t) => t.value === block.type)?.label ?? block.type;
 
                     return (
-                        <li key={block.key} className="border border-hairline bg-paper">
-                            <div className="hairline-b flex items-center justify-between gap-3 bg-paper-dim px-4 py-2">
-                                <span className="label-xs text-graphite">
-                                    {String(index + 1).padStart(2, '0')} · {label}
-                                </span>
-                                <div className="flex gap-2">
-                                    <IconButton label="Nach oben" onClick={() => move(index, -1)} disabled={index === 0}>
-                                        ↑
-                                    </IconButton>
-                                    <IconButton
-                                        label="Nach unten"
-                                        onClick={() => move(index, 1)}
-                                        disabled={index === blocks.length - 1}
-                                    >
-                                        ↓
-                                    </IconButton>
-                                    <IconButton label="Entfernen" onClick={() => remove(index)}>
-                                        ✕
-                                    </IconButton>
-                                </div>
-                            </div>
+                        <li key={block.key}>
+                            <Inserter onClick={() => setDialog({ mode: 'add', index })} />
 
-                            <div className="p-4">
-                                <BlockFields
-                                    block={block}
-                                    library={library}
-                                    patch={(data) => patch(index, data)}
-                                />
+                            <div className="border border-hairline bg-paper">
+                                <div className="hairline-b flex items-center justify-between gap-3 bg-paper-dim px-4 py-2">
+                                    <span className="label-xs text-graphite">
+                                        {String(index + 1).padStart(2, '0')} · {label}
+                                    </span>
+                                    <div className="flex gap-2">
+                                        <IconButton label="Typ ändern" onClick={() => setDialog({ mode: 'convert', index })}>
+                                            ⇄
+                                        </IconButton>
+                                        <IconButton label="Nach oben" onClick={() => move(index, -1)} disabled={index === 0}>
+                                            ↑
+                                        </IconButton>
+                                        <IconButton
+                                            label="Nach unten"
+                                            onClick={() => move(index, 1)}
+                                            disabled={index === blocks.length - 1}
+                                        >
+                                            ↓
+                                        </IconButton>
+                                        <IconButton label="Entfernen" onClick={() => remove(index)}>
+                                            ✕
+                                        </IconButton>
+                                    </div>
+                                </div>
+
+                                <div className="p-4">
+                                    <BlockFields
+                                        block={block}
+                                        library={library}
+                                        patch={(data) => patch(index, data)}
+                                    />
+                                </div>
                             </div>
                         </li>
                     );
                 })}
             </ol>
 
-            <div className="mt-6 border border-dashed border-hairline p-4">
-                <p className="label-xs mb-3 text-graphite">Abschnitt hinzufügen</p>
-                <div className="flex flex-wrap gap-2">
-                    {blockTypes.map((option) => (
-                        <Button key={option.value} variant="ghost" onClick={() => add(option)}>
-                            {option.label}
-                        </Button>
-                    ))}
-                </div>
-            </div>
+            <Inserter
+                onClick={() => setDialog({ mode: 'add', index: blocks.length })}
+                text={blocks.length === 0 ? 'Ersten Abschnitt hinzufügen' : undefined}
+            />
+
+            {dialog?.mode === 'add' && (
+                <BlockTypeDialog
+                    title="Abschnitt hinzufügen"
+                    options={blockTypes}
+                    onPick={(type) => insert(dialog.index, type)}
+                    onClose={() => setDialog(null)}
+                />
+            )}
+
+            {dialog?.mode === 'convert' && converting && (
+                <BlockTypeDialog
+                    title="Abschnitt umwandeln"
+                    options={blockTypes}
+                    current={converting.type}
+                    lossesFor={(type) =>
+                        convertBlock(converting.type, converting.data, type, blankFor(type)).losses
+                    }
+                    onPick={(type) => convert(dialog.index, type)}
+                    onClose={() => setDialog(null)}
+                />
+            )}
+        </div>
+    );
+}
+
+/** The small plus between sections; opens the dialog to add one right here. */
+function Inserter({ onClick, text }: { onClick: () => void; text?: string }) {
+    return (
+        <div className="group relative flex justify-center py-1.5">
+            <span
+                aria-hidden
+                className="absolute inset-x-0 top-1/2 border-t border-dashed border-ink/30 opacity-0 transition-opacity group-hover:opacity-100 group-focus-within:opacity-100"
+            />
+            <button
+                type="button"
+                onClick={onClick}
+                aria-label={text ?? 'Abschnitt hier einfügen'}
+                title={text ?? 'Abschnitt hier einfügen'}
+                className="relative flex h-7 min-w-7 items-center justify-center gap-2 border border-hairline bg-paper px-1.5 text-graphite transition-colors hover:border-ink hover:bg-ink hover:text-paper"
+            >
+                <span aria-hidden className="text-base leading-none">
+                    +
+                </span>
+                {text && <span className="label-xs pr-1">{text}</span>}
+            </button>
         </div>
     );
 }
@@ -294,6 +358,7 @@ function IconButton({
         <button
             type="button"
             aria-label={label}
+            title={label}
             onClick={onClick}
             disabled={disabled}
             className="flex h-8 w-8 items-center justify-center border border-hairline bg-paper text-sm hover:bg-ink hover:text-paper disabled:opacity-30 disabled:hover:bg-paper disabled:hover:text-ink"
