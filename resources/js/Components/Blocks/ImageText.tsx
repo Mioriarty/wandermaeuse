@@ -1,5 +1,6 @@
 import Caption from '@/Components/Caption';
 import Frame from '@/Components/Frame';
+import { useLightbox } from '@/Components/Lightbox';
 import type { BlockProps } from '@/types';
 
 /**
@@ -19,6 +20,7 @@ export default function ImageText({ block }: { block: BlockProps }) {
     const caption = (block.data.caption as string) ?? image?.caption;
     const imageRight = block.data.variant === 'right';
     const size = SIZES[block.data.size as keyof typeof SIZES] ?? SIZES.medium;
+    const { open, lightbox } = useLightbox(block.images, caption);
 
     return (
         <div className="mx-auto w-full max-w-6xl px-5 sm:px-8">
@@ -27,8 +29,9 @@ export default function ImageText({ block }: { block: BlockProps }) {
             <div className="flex flex-col gap-6 md:grid md:grid-cols-12 md:items-start md:gap-10">
                 {image && (
                     <figure className={`m-0 ${size.image} ${imageRight ? 'md:order-2' : 'md:order-1'}`}>
-                        <Frame image={image} sizes={size.sizes} />
+                        <Frame image={image} sizes={size.sizes} onOpen={() => open(0)} />
                         <Caption>{caption}</Caption>
+                        {lightbox}
                     </figure>
                 )}
                 {/* Same type as a plain text block, so the running text does

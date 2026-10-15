@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Caption from '@/Components/Caption';
 import Frame from '@/Components/Frame';
+import { useLightbox } from '@/Components/Lightbox';
 import type { BlockProps } from '@/types';
 
 /**
@@ -13,6 +14,8 @@ export default function Gallery({ block }: { block: BlockProps }) {
     const railRef = useRef<HTMLUListElement | null>(null);
     const [positions, setPositions] = useState(1);
     const [active, setActive] = useState(0);
+    const caption = (block.data.caption as string) ?? '';
+    const { open, lightbox } = useLightbox(block.images, caption);
 
     // Abstand von einem Bild zum naechsten, Luecke eingerechnet.
     const step = useCallback(() => {
@@ -47,7 +50,6 @@ export default function Gallery({ block }: { block: BlockProps }) {
 
     if (block.images.length === 0) return null;
 
-    const caption = (block.data.caption as string) ?? '';
     const scrollable = positions > 1;
 
     return (
@@ -58,7 +60,7 @@ export default function Gallery({ block }: { block: BlockProps }) {
                     onScroll={sync}
                     className="rail m-0 list-none gap-3 p-0 sm:gap-4"
                 >
-                    {block.images.map((image) => (
+                    {block.images.map((image, index) => (
                         <li
                             key={image.id}
                             className="w-[calc((100%-0.75rem)/2)] shrink-0 snap-start sm:w-[calc((100%-1rem)/2)] md:w-[calc((100%-2rem)/3)]"
@@ -67,6 +69,7 @@ export default function Gallery({ block }: { block: BlockProps }) {
                                 image={image}
                                 ratio={4 / 5}
                                 sizes="(min-width: 768px) 33vw, 50vw"
+                                onOpen={() => open(index)}
                             />
                         </li>
                     ))}
@@ -110,6 +113,7 @@ export default function Gallery({ block }: { block: BlockProps }) {
             )}
 
             <Caption>{caption}</Caption>
+            {lightbox}
         </figure>
     );
 }

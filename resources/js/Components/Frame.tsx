@@ -13,6 +13,8 @@ type Props = {
      * height comes from the viewport rather than from the photo.
      */
     fill?: boolean;
+    /** Makes the photo a button that opens it large, in the lightbox. */
+    onOpen?: () => void;
 };
 
 /**
@@ -29,37 +31,49 @@ export default function Frame({
     priority = false,
     ratio,
     fill = false,
+    onOpen,
 }: Props) {
     const aspect = ratio ?? image.aspectRatio ?? 1;
+    const box = {
+        className: fill
+            ? `absolute inset-0 overflow-hidden ${className}`
+            : `relative w-full overflow-hidden ${className}`,
+        style: fill
+            ? { backgroundColor: image.dominantColor }
+            : { aspectRatio: String(aspect), backgroundColor: image.dominantColor },
+    };
 
-    return (
-        <div
-            className={
-                fill
-                    ? `absolute inset-0 overflow-hidden ${className}`
-                    : `relative w-full overflow-hidden ${className}`
-            }
-            style={
-                fill
-                    ? { backgroundColor: image.dominantColor }
-                    : { aspectRatio: String(aspect), backgroundColor: image.dominantColor }
-            }
-        >
-            <picture>
-                <source type="image/webp" srcSet={image.srcset} sizes={sizes} />
-                <img
-                    src={image.src}
-                    srcSet={image.jpegSrcset}
-                    sizes={sizes}
-                    alt={image.alt}
-                    width={image.width}
-                    height={image.height}
-                    loading={priority ? 'eager' : 'lazy'}
-                    decoding={priority ? 'sync' : 'async'}
-                    fetchPriority={priority ? 'high' : 'auto'}
-                    className="absolute inset-0 h-full w-full object-cover"
-                />
-            </picture>
-        </div>
+    const picture = (
+        <picture>
+            <source type="image/webp" srcSet={image.srcset} sizes={sizes} />
+            <img
+                src={image.src}
+                srcSet={image.jpegSrcset}
+                sizes={sizes}
+                alt={image.alt}
+                width={image.width}
+                height={image.height}
+                loading={priority ? 'eager' : 'lazy'}
+                decoding={priority ? 'sync' : 'async'}
+                fetchPriority={priority ? 'high' : 'auto'}
+                className="absolute inset-0 h-full w-full object-cover"
+            />
+        </picture>
     );
+
+    if (onOpen) {
+        return (
+            <button
+                type="button"
+                onClick={onOpen}
+                aria-label={image.alt ? `Bild vergrößern: ${image.alt}` : 'Bild vergrößern'}
+                {...box}
+                className={`block cursor-zoom-in ${box.className}`}
+            >
+                {picture}
+            </button>
+        );
+    }
+
+    return <div {...box}>{picture}</div>;
 }

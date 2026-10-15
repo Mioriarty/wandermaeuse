@@ -18,6 +18,9 @@ Reiseblog auf Laravel 13 + Inertia 3 + React 19 + TypeScript + Tailwind 4.
   in `BlockEditor.tsx`, eine Skizze in `BlockTypeDialog.tsx` und eine Zeile in
   `blockConversion.ts` (was das Muster fasst, fürs Umwandeln zwischen Typen) –
   sonst nichts. `tsc` meldet, wenn eins davon fehlt.
+- Fotos in Einträgen öffnen per Tippen in der Lightbox (`Lightbox.tsx`,
+  eigene Pointer-Gesten, keine Bibliothek). Ein Block holt sie mit
+  `useLightbox(bilder, unterschrift)` und gibt `open` als `onOpen` an `Frame`.
 - Einzelne Stellschrauben der Seite liegen als Schluessel und Wert in der
   Tabelle `settings` (`App\Models\Setting`). Bisher steht dort nur das
   Titelbild der Startseite, waehlbar unter `/admin/startseite`. Welches Bild
