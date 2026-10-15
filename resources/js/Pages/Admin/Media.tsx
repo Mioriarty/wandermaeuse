@@ -1,10 +1,15 @@
-import { Head, router, useForm } from '@inertiajs/react';
+import { Head, Link, router, useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Button, Panel, inputClass } from '@/Components/Admin/Ui';
 import type { ImageProps } from '@/types';
 
-type Row = ImageProps & { originalName: string | null; createdAt: string | null };
+type Row = ImageProps & {
+    originalName: string | null;
+    createdAt: string | null;
+    /** Entries (and the home page) that show this picture. */
+    usedIn: { label: string; url: string }[];
+};
 type Paginated = { data: Row[]; links: { url: string | null; label: string; active: boolean }[] };
 
 export default function Media({ media }: { media: Paginated }) {
@@ -59,18 +64,27 @@ export default function Media({ media }: { media: Paginated }) {
 
             <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-6">
                 {media.data.map((image) => (
-                    <figure key={image.id} className="m-0 border border-hairline bg-paper">
-                        <div className="aspect-square" style={{ backgroundColor: image.dominantColor }}>
+                    <figure key={image.id} className="m-0 flex flex-col border border-hairline bg-paper">
+                        <div className="relative aspect-square overflow-hidden" style={{ backgroundColor: image.dominantColor }}>
                             <img src={image.src} alt={image.alt} className="h-full w-full object-cover" />
+                            {image.usedIn.length > 0 && (
+                                <span
+                                    title={`Verwendet: ${image.usedIn.map((use) => use.label).join(', ')}`}
+                                    className="absolute top-1.5 left-1.5 flex h-6 w-6 items-center justify-center bg-ink text-xs text-paper"
+                                >
+                                    ✓<span className="sr-only">Verwendet</span>
+                                </span>
+                            )}
                         </div>
-                        <figcaption className="p-2">
+                        <figcaption className="flex flex-1 flex-col p-2">
                             <p className="truncate text-xs text-graphite" title={image.originalName ?? ''}>
                                 {image.originalName ?? `#${image.id}`}
                             </p>
                             <p className="mt-0.5 text-xs text-graphite tabular-nums">
                                 {image.width}×{image.height}
                             </p>
-                            <div className="mt-2 flex gap-1">
+                            <UsedIn uses={image.usedIn} />
+                            <div className="mt-auto flex gap-1 pt-2">
                                 <button
                                     type="button"
                                     onClick={() => setEditing(image)}
@@ -81,7 +95,11 @@ export default function Media({ media }: { media: Paginated }) {
                                 <button
                                     type="button"
                                     onClick={() => {
-                                        if (window.confirm('Bild wirklich löschen? Es verschwindet dann auch aus allen Einträgen.')) {
+                                        const where = image.usedIn.map((use) => `– ${use.label}`).join('\n');
+                                        const question = where
+                                            ? `Dieses Bild wird noch verwendet:\n${where}\n\nWirklich löschen? Es verschwindet dann dort.`
+                                            : 'Bild wirklich löschen?';
+                                        if (window.confirm(question)) {
                                             router.delete(`/admin/bilder/${image.id}`, { preserveScroll: true });
                                         }
                                     }}
@@ -105,6 +123,33 @@ export default function Media({ media }: { media: Paginated }) {
 
             {editing && <AltDialog image={editing} onClose={() => setEditing(null)} />}
         </AdminLayout>
+    );
+}
+
+/** Where the picture appears, each a link to its editor; two at most, then a count. */
+function UsedIn({ uses }: { uses: Row['usedIn'] }) {
+    if (uses.length === 0) {
+        return <p className="mt-1 text-xs text-graphite/70">Nicht verwendet</p>;
+    }
+
+    const shown = uses.slice(0, 2);
+    const rest = uses.slice(2);
+
+    return (
+        <ul className="mt-1 text-xs">
+            {shown.map((use) => (
+                <li key={use.url} className="truncate">
+                    <Link href={use.url} title={use.label} className="text-ink underline decoration-hairline hover:decoration-ink">
+                        {use.label}
+                    </Link>
+                </li>
+            ))}
+            {rest.length > 0 && (
+                <li className="text-graphite" title={rest.map((use) => use.label).join(', ')}>
+                    und {rest.length} weitere
+                </li>
+            )}
+        </ul>
     );
 }
 

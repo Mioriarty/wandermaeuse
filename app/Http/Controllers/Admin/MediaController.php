@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Media;
 use App\Services\MediaService;
+use App\Support\MediaUsage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Inertia\Inertia;
@@ -16,11 +17,15 @@ class MediaController extends Controller
 
     public function index(): Response
     {
+        $page = Media::latest()->paginate(60);
+        $usage = MediaUsage::of($page->getCollection()->modelKeys());
+
         return Inertia::render('Admin/Media', [
-            'media' => Media::latest()->paginate(60)->through(fn (Media $m) => [
+            'media' => $page->through(fn (Media $m) => [
                 ...$m->toImageProps(),
                 'originalName' => $m->original_name,
                 'createdAt' => $m->created_at?->toIso8601String(),
+                'usedIn' => $usage[$m->id] ?? [],
             ]),
         ]);
     }
