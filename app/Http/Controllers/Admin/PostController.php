@@ -52,6 +52,8 @@ class PostController extends Controller
                 'slug' => $post->slug,
                 'excerpt' => $post->excerpt,
                 'stop_id' => $post->stop_id,
+                'period_starts_on' => $post->period_starts_on?->toDateString(),
+                'period_ends_on' => $post->period_ends_on?->toDateString(),
                 'cover_media_id' => $post->cover_media_id,
                 'status' => $post->status,
                 'published_at' => $post->published_at?->format('Y-m-d\TH:i'),
@@ -108,12 +110,17 @@ class PostController extends Controller
             ],
             'excerpt' => ['nullable', 'string', 'max:500'],
             'stop_id' => ['nullable', 'exists:stops,id'],
+            'period_starts_on' => ['nullable', 'date', 'required_with:period_ends_on'],
+            'period_ends_on' => ['nullable', 'date', 'after_or_equal:period_starts_on'],
             'cover_media_id' => ['nullable', 'exists:media,id'],
             'status' => ['required', Rule::in([Post::STATUS_DRAFT, Post::STATUS_SCHEDULED, Post::STATUS_PUBLISHED])],
             'published_at' => ['nullable', 'date'],
             'blocks' => ['array'],
             'blocks.*.type' => ['required', Rule::enum(BlockType::class)],
             'blocks.*.data' => ['present', 'array'],
+        ], [
+            'period_starts_on.required_with' => 'Ein Ende braucht auch einen Anfang.',
+            'period_ends_on.after_or_equal' => 'Das Ende liegt vor dem Anfang.',
         ]);
     }
 
@@ -135,6 +142,8 @@ class PostController extends Controller
             'slug' => $data['slug'] ?: Str::slug($data['title']),
             'excerpt' => $data['excerpt'] ?? null,
             'stop_id' => $data['stop_id'] ?? null,
+            'period_starts_on' => $data['period_starts_on'] ?? null,
+            'period_ends_on' => $data['period_ends_on'] ?? null,
             'cover_media_id' => $data['cover_media_id'] ?? null,
             'status' => $data['status'],
             'published_at' => $publishedAt,

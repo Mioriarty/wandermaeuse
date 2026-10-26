@@ -13,6 +13,8 @@ type PostForm = {
     slug: string;
     excerpt: string | null;
     stop_id: number | null;
+    period_starts_on: string | null;
+    period_ends_on: string | null;
     cover_media_id: number | null;
     status: string;
     published_at: string | null;
@@ -37,6 +39,8 @@ export default function PostEdit({ post, blocks, composition, stops, blockTypes,
         slug: post?.slug ?? '',
         excerpt: post?.excerpt ?? '',
         stop_id: post?.stop_id ?? null,
+        period_starts_on: post?.period_starts_on ?? '',
+        period_ends_on: post?.period_ends_on ?? '',
         cover_media_id: post?.cover_media_id ?? null,
         status: post?.status ?? 'draft',
         published_at: post?.published_at ?? '',
@@ -200,6 +204,33 @@ export default function PostEdit({ post, blocks, composition, stops, blockTypes,
                                         </option>
                                     ))}
                                 </select>
+                            </Field>
+
+                            <Field
+                                label="Erlebt von"
+                                error={form.errors.period_starts_on}
+                                hint="Welche Tage der Eintrag erzählt. Freiwillig."
+                            >
+                                <input
+                                    type="date"
+                                    className={inputClass}
+                                    value={form.data.period_starts_on ?? ''}
+                                    onChange={(e) => form.setData('period_starts_on', e.target.value)}
+                                />
+                            </Field>
+
+                            <Field
+                                label="Erlebt bis"
+                                error={form.errors.period_ends_on}
+                                hint="Leer lassen, wenn es um einen einzigen Tag geht."
+                            >
+                                <input
+                                    type="date"
+                                    className={inputClass}
+                                    value={form.data.period_ends_on ?? ''}
+                                    min={form.data.period_starts_on || undefined}
+                                    onChange={(e) => form.setData('period_ends_on', e.target.value)}
+                                />
                             </Field>
                         </div>
                     </Panel>

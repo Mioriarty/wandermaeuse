@@ -35,6 +35,8 @@ class Post extends Model
     {
         return [
             'published_at' => 'datetime',
+            'period_starts_on' => 'date',
+            'period_ends_on' => 'date',
         ];
     }
 
@@ -82,6 +84,24 @@ class Post extends Model
     }
 
     /**
+     * The days the entry tells of, as plain Y-m-d dates: they are calendar
+     * days, not moments, and must not shift with the reader's time zone.
+     *
+     * @return array{from: string, until: string}|null
+     */
+    public function periodProps(): ?array
+    {
+        if ($this->period_starts_on === null) {
+            return null;
+        }
+
+        return [
+            'from' => $this->period_starts_on->toDateString(),
+            'until' => ($this->period_ends_on ?? $this->period_starts_on)->toDateString(),
+        ];
+    }
+
+    /**
      * Resolve every block's media ids into image props in a single query, so
      * rendering a post with six galleries is still two queries, not sixty.
      *
@@ -122,6 +142,7 @@ class Post extends Model
             'slug' => $this->slug,
             'excerpt' => $this->excerpt,
             'publishedAt' => $this->published_at?->toIso8601String(),
+            'period' => $this->periodProps(),
             'readingMinutes' => $this->reading_minutes,
             'stop' => $this->stop ? [
                 'name' => $this->stop->name,

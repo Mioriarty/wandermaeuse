@@ -5,8 +5,8 @@ import CompositionPlayer from '@/Components/CompositionPlayer';
 import NewsletterForm from '@/Components/NewsletterForm';
 import RouteMap from '@/Components/RouteMap';
 import PublicLayout from '@/Layouts/PublicLayout';
-import { formatDate } from '@/lib/format';
-import type { BlockProps, CommentProps, CompositionProps, PostCard, StopProps } from '@/types';
+import { formatPostDate } from '@/lib/format';
+import type { BlockProps, CommentProps, CompositionProps, PostCard, PostPeriod, StopProps } from '@/types';
 
 type Props = {
     post: {
@@ -16,6 +16,7 @@ type Props = {
         excerpt: string | null;
         publishedAt: string | null;
         readingMinutes: number;
+        period: PostPeriod | null;
         stop: StopProps | null;
         status: string;
     };
@@ -70,7 +71,7 @@ export default function BlogShow({
                                 {post.stop.name}, {post.stop.country}
                             </span>
                         )}
-                        <span>{formatDate(post.publishedAt)}</span>
+                        <span>{formatPostDate(post)}</span>
                         <span>{post.readingMinutes} Min. Lesezeit</span>
                     </div>
                     <h1 className="mt-4 max-w-4xl font-display text-[clamp(2.5rem,8vw,5.5rem)] leading-[1] text-balance">

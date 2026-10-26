@@ -49,12 +49,16 @@ export type BlockProps = {
     images: ImageProps[];
 };
 
+/** Die Tage, von denen ein Eintrag erzaehlt, als Y-m-d. Ein einzelner Tag hat from === until. */
+export type PostPeriod = { from: string; until: string };
+
 export type PostCard = {
     id: number;
     title: string;
     slug: string;
     excerpt: string | null;
     publishedAt: string | null;
+    period: PostPeriod | null;
     readingMinutes: number;
     stop: { name: string; country: string } | null;
     cover: ImageProps | null;

@@ -1,7 +1,7 @@
 import { Link } from '@inertiajs/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import Frame from '@/Components/Frame';
-import { formatDate } from '@/lib/format';
+import { formatPostDate } from '@/lib/format';
 import type { PostCard as PostCardType } from '@/types';
 
 /**
@@ -84,7 +84,7 @@ export default function PostRail({ posts }: { posts: PostCardType[] }) {
                             </h3>
 
                             <p className="label-xs mt-2 flex flex-wrap gap-x-3 gap-y-1 text-graphite">
-                                <span>{formatDate(post.publishedAt)}</span>
+                                <span>{formatPostDate(post)}</span>
                                 {post.stop && <span>{post.stop.name}</span>}
                             </p>
 

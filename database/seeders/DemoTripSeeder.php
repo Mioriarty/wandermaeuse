@@ -33,6 +33,7 @@ class DemoTripSeeder extends Seeder
             'Ankommen, Zeitumstellung, der erste Nebel über der Küste – und ein Klavier in einer Bar in Barranco.',
             $media,
             0,
+            period: ['2026-02-09', '2026-02-12'],
         );
 
         Composition::create([
@@ -50,6 +51,7 @@ class DemoTripSeeder extends Seeder
             'Zwölf Stunden Bus, 3400 Meter Höhe und plötzlich sehr viel dünnere Luft.',
             $media,
             3,
+            period: ['2026-02-26', '2026-03-01'],
         );
 
         Composition::create([
@@ -67,6 +69,7 @@ class DemoTripSeeder extends Seeder
             'Drei Tage über den größten Salzsee der Welt – und ein Horizont, der einfach nicht aufhört.',
             $media,
             6,
+            period: ['2026-03-16', '2026-03-18'],
         );
 
         foreach ([$lima, $cusco, $uyuni] as $post) {
@@ -316,8 +319,9 @@ class DemoTripSeeder extends Seeder
      * @param  list<Media>  $media
      * @param  int  $offset  Startpunkt im Bildvorrat, damit die drei Eintraege
      *                       nicht alle dasselbe Titelbild tragen.
+     * @param  array{string, string}|null  $period  Die erlebten Tage, von und bis.
      */
-    private function post(string $title, Stop $stop, string $publishedAt, string $excerpt, array $media, int $offset = 0): Post
+    private function post(string $title, Stop $stop, string $publishedAt, string $excerpt, array $media, int $offset = 0, ?array $period = null): Post
     {
         $pick = fn (int $i): Media => $media[($offset + $i) % count($media)];
 
@@ -326,6 +330,8 @@ class DemoTripSeeder extends Seeder
             'slug' => Str::slug($title),
             'excerpt' => $excerpt,
             'stop_id' => $stop->id,
+            'period_starts_on' => $period[0] ?? null,
+            'period_ends_on' => $period[1] ?? null,
             'cover_media_id' => $pick(0)->id,
             'status' => Post::STATUS_PUBLISHED,
             'published_at' => $publishedAt,

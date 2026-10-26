@@ -82,6 +82,7 @@ class PostController extends Controller
                 'excerpt' => $post->excerpt,
                 'publishedAt' => $post->published_at?->toIso8601String(),
                 'readingMinutes' => $post->reading_minutes,
+                'period' => $post->periodProps(),
                 'stop' => $post->stop?->toMapProps(),
                 'status' => $post->status,
             ],

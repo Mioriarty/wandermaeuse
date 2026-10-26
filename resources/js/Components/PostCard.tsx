@@ -1,6 +1,6 @@
 import { Link } from '@inertiajs/react';
 import Frame from '@/Components/Frame';
-import { formatDate } from '@/lib/format';
+import { formatPostDate } from '@/lib/format';
 import type { PostCard as PostCardType } from '@/types';
 
 export default function PostCard({ post, index }: { post: PostCardType; index: number }) {
@@ -30,7 +30,7 @@ export default function PostCard({ post, index }: { post: PostCardType; index: n
                                 {post.stop.name}, {post.stop.country}
                             </span>
                         )}
-                        <span>{formatDate(post.publishedAt)}</span>
+                        <span>{formatPostDate(post)}</span>
                     </div>
 
                     <h2 className="mt-3 font-display text-[clamp(1.75rem,3.5vw,2.75rem)] font-medium leading-[1.1] text-balance transition-colors group-hover:text-accent">
