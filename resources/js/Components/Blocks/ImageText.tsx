@@ -15,21 +15,28 @@ const SIZES = {
 } as const;
 
 export default function ImageText({ block }: { block: BlockProps }) {
-    const image = block.images[0];
+    const images = block.images;
     const html = (block.data.html as string) ?? '';
-    const caption = (block.data.caption as string) ?? image?.caption;
+    // A single picture may bring its own caption from the library; under a
+    // stack of several that would read as belonging to the last one only.
+    const caption = (block.data.caption as string) || (images.length === 1 ? images[0].caption : undefined);
     const imageRight = block.data.variant === 'right';
     const size = SIZES[block.data.size as keyof typeof SIZES] ?? SIZES.medium;
     const { open, lightbox } = useLightbox(block.images, caption);
 
     return (
         <div className="mx-auto w-full max-w-6xl px-5 sm:px-8">
-            {/* Stacks on mobile with the picture first, whichever side it sits
-                on at desktop width. */}
+            {/* Stacks on mobile with the pictures first, whichever side they
+                sit on at desktop width. Several pictures run one under another,
+                all on the same side. */}
             <div className="flex flex-col gap-6 md:grid md:grid-cols-12 md:items-start md:gap-10">
-                {image && (
+                {images.length > 0 && (
                     <figure className={`m-0 ${size.image} ${imageRight ? 'md:order-2' : 'md:order-1'}`}>
-                        <Frame image={image} sizes={size.sizes} onOpen={() => open(0)} />
+                        <div className="flex flex-col gap-3 sm:gap-4">
+                            {images.map((image, index) => (
+                                <Frame key={image.id} image={image} sizes={size.sizes} onOpen={() => open(index)} />
+                            ))}
+                        </div>
                         <Caption>{caption}</Caption>
                         {lightbox}
                     </figure>

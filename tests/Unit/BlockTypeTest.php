@@ -41,6 +41,11 @@ class BlockTypeTest extends TestCase
             [9, 4, 6],
             BlockType::Gallery->mediaIds(['media_ids' => [9, 4, 6]]),
         );
+
+        $this->assertSame(
+            [8, 2],
+            BlockType::ImageText->mediaIds(['media_ids' => [8, 2]]),
+        );
     }
 
     public function test_missing_and_junk_ids_are_dropped_rather_than_crashing(): void

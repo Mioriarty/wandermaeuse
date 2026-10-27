@@ -39,7 +39,7 @@ class BlockRenderingTest extends TestCase
             BlockType::Text->value => ['html' => '<p>Hallo</p>'],
             BlockType::Heading->value => ['text' => 'Titel', 'label' => 'Eins'],
             BlockType::ImageFull->value => ['media_id' => $media[0]->id, 'caption' => 'A'],
-            BlockType::ImageText->value => ['media_id' => $media[1]->id, 'html' => '<p>Text</p>', 'variant' => 'right'],
+            BlockType::ImageText->value => ['media_ids' => [$media[1]->id, $media[2]->id], 'html' => '<p>Text</p>', 'variant' => 'right'],
             BlockType::ImagePair->value => ['left_media_id' => $media[0]->id, 'right_media_id' => $media[1]->id],
             BlockType::Gallery->value => ['media_ids' => [$media[2]->id, $media[0]->id]],
             BlockType::Quote->value => ['text' => 'Zitat', 'attribution' => 'Wer'],
@@ -61,6 +61,10 @@ class BlockRenderingTest extends TestCase
         $this->assertSame([], $rendered[BlockType::Text->value]['images']);
         $this->assertCount(1, $rendered[BlockType::ImageFull->value]['images']);
         $this->assertCount(2, $rendered[BlockType::ImagePair->value]['images']);
+        $this->assertSame(
+            [$media[1]->id, $media[2]->id],
+            array_column($rendered[BlockType::ImageText->value]['images'], 'id'),
+        );
 
         // Gallery order is the order the editor stored, not the media id order.
         $gallery = $rendered[BlockType::Gallery->value]['images'];

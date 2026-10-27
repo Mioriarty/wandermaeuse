@@ -23,7 +23,7 @@ const room: Record<BlockType, { images: number; text: 'rich' | 'plain' | null; c
     text: { images: 0, text: 'rich', caption: false },
     heading: { images: 0, text: 'plain', caption: false },
     image_full: { images: 1, text: null, caption: true },
-    image_text: { images: 1, text: 'rich', caption: true },
+    image_text: { images: Infinity, text: 'rich', caption: true },
     image_pair: { images: 2, text: null, caption: true },
     gallery: { images: Infinity, text: null, caption: true },
     quote: { images: 0, text: 'plain', caption: false },
@@ -32,7 +32,7 @@ const room: Record<BlockType, { images: number; text: 'rich' | 'plain' | null; c
 
 /**
  * Turns a block into another pattern, keeping as much as the new pattern has
- * room for: a gallery becoming "Bild neben Text" keeps its first picture,
+ * room for: a gallery becoming "Bildpaar" keeps its first two pictures,
  * a text becoming a quote keeps its words but not their formatting. `losses`
  * names what does not survive, so the editor can say so before it happens.
  */
@@ -57,10 +57,9 @@ function read(type: BlockType, data: Data): Content {
     const html = str('html');
 
     return {
-        images:
-            type === 'gallery'
-                ? ids(Array.isArray(data.media_ids) ? data.media_ids : [])
-                : ids([data.media_id, data.left_media_id, data.right_media_id]),
+        images: Array.isArray(data.media_ids)
+            ? ids(data.media_ids)
+            : ids([data.media_id, data.left_media_id, data.right_media_id]),
         html: plain(html) === '' ? '' : html,
         heading: type === 'heading' ? str('text') : '',
         label: type === 'heading' ? str('label') : '',
@@ -80,7 +79,7 @@ function write(target: BlockType, c: Content): Data {
         case 'image_full':
             return { media_id: c.images[0] ?? null, caption: c.caption };
         case 'image_text':
-            return { media_id: c.images[0] ?? null, html: richText(c), caption: c.caption };
+            return { media_ids: c.images, html: richText(c), caption: c.caption };
         case 'image_pair':
             return { left_media_id: c.images[0] ?? null, right_media_id: c.images[1] ?? null, caption: c.caption };
         case 'gallery':

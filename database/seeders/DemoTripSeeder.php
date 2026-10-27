@@ -350,7 +350,7 @@ class DemoTripSeeder extends Seeder
             [BlockType::Text, ['html' => '<p>Wir sind angekommen. Der Bus hat sechs Stunden länger gebraucht als angekündigt, und trotzdem war es das gute Sechs-Stunden-Länger: die Straße lief zuletzt an einem Fluss entlang, und irgendwann hörte das Grün auf.</p><p>Auf dem Markt haben wir erst einmal <strong>alles</strong> gekauft, was wir nicht kannten.</p>']],
             [BlockType::ImageFull, ['media_id' => $pick(1)->id, 'caption' => 'Der erste Morgen, kurz nach sechs.', 'bleed' => true]],
             [BlockType::Heading, ['text' => 'Was uns niemand gesagt hatte', 'label' => 'Kapitel zwei']],
-            [BlockType::ImageText, ['media_id' => $pick(2)->id, 'html' => '<p>Dass es nachts so kalt wird, zum Beispiel. Und dass man die ersten zwei Tage einfach nur sitzt und atmet.</p><p>Dafür ist das Licht am Nachmittag so, dass man ständig stehen bleibt.</p>', 'variant' => 'left', 'caption' => 'Nachmittagslicht.']],
+            [BlockType::ImageText, ['media_ids' => [$pick(2)->id, $pick(8)->id], 'html' => '<p>Dass es nachts so kalt wird, zum Beispiel. Und dass man die ersten zwei Tage einfach nur sitzt und atmet.</p><p>Dafür ist das Licht am Nachmittag so, dass man ständig stehen bleibt.</p>', 'variant' => 'left', 'caption' => 'Nachmittagslicht.']],
             [BlockType::ImagePair, ['left_media_id' => $pick(3)->id, 'right_media_id' => $pick(4)->id, 'caption' => 'Links der Weg hinauf, rechts der Blick zurück.']],
             [BlockType::Quote, ['text' => 'Man reist nicht, um anzukommen, sondern um zu reisen.', 'attribution' => 'Goethe, angeblich']],
             [BlockType::Gallery, ['media_ids' => [$pick(5)->id, $pick(6)->id, $pick(7)->id], 'caption' => 'Drei Tage in Bildern.']],

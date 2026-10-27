@@ -132,7 +132,8 @@ function Sketch({ type }: { type: BlockType }) {
         image_full: image(2, 4, 44, 24),
         image_text: (
             <>
-                {image(2, 4, 20, 24)}
+                {image(2, 4, 20, 11)}
+                {image(2, 17, 20, 11)}
                 {line(26, 9, 20)}
                 {line(26, 15, 20)}
                 {line(26, 21, 14)}

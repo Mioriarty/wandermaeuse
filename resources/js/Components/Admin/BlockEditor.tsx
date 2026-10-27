@@ -232,10 +232,14 @@ function BlockFields({
         case 'image_text':
             return (
                 <div className="grid gap-4">
+                    <MultiMediaPicker
+                        library={library}
+                        selected={(block.data.media_ids as number[]) ?? []}
+                        onChange={(media_ids) => patch({ media_ids })}
+                    />
                     <div className="grid gap-4 md:grid-cols-2">
-                        <MediaPicker library={library} selected={num('media_id')} onSelect={(id) => patch({ media_id: id })} />
                         <div>
-                            <span className="label-xs block text-graphite">Bild steht</span>
+                            <span className="label-xs block text-graphite">Bilder stehen</span>
                             <select
                                 className={`${inputClass} mt-2`}
                                 value={str('variant') || 'left'}
@@ -244,7 +248,9 @@ function BlockFields({
                                 <option value="left">links, Text rechts</option>
                                 <option value="right">rechts, Text links</option>
                             </select>
-                            <span className="label-xs mt-4 block text-graphite">Bildgröße</span>
+                        </div>
+                        <div>
+                            <span className="label-xs block text-graphite">Bildgröße</span>
                             <select
                                 className={`${inputClass} mt-2`}
                                 value={str('size') || 'medium'}
@@ -254,14 +260,14 @@ function BlockFields({
                                 <option value="medium">mittel</option>
                                 <option value="large">groß (gut die Hälfte)</option>
                             </select>
-                            <input
-                                className={`${inputClass} mt-4`}
-                                placeholder="Bildunterschrift (optional)"
-                                value={str('caption')}
-                                onChange={(e) => patch({ caption: e.target.value })}
-                            />
                         </div>
                     </div>
+                    <input
+                        className={inputClass}
+                        placeholder="Bildunterschrift unter allen Bildern (optional)"
+                        value={str('caption')}
+                        onChange={(e) => patch({ caption: e.target.value })}
+                    />
                     <RichText value={str('html')} onChange={(html) => patch({ html })} />
                 </div>
             );

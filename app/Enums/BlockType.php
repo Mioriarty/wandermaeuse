@@ -46,9 +46,8 @@ enum BlockType: string
     {
         $ids = match ($this) {
             self::ImageFull => [$data['media_id'] ?? null],
-            self::ImageText => [$data['media_id'] ?? null],
             self::ImagePair => [$data['left_media_id'] ?? null, $data['right_media_id'] ?? null],
-            self::Gallery => $data['media_ids'] ?? [],
+            self::ImageText, self::Gallery => $data['media_ids'] ?? [],
             default => [],
         };
 
@@ -66,7 +65,7 @@ enum BlockType: string
             self::Text => ['html' => ''],
             self::Heading => ['text' => '', 'label' => ''],
             self::ImageFull => ['media_id' => null, 'caption' => '', 'bleed' => true],
-            self::ImageText => ['media_id' => null, 'html' => '', 'variant' => 'left', 'size' => 'medium', 'caption' => ''],
+            self::ImageText => ['media_ids' => [], 'html' => '', 'variant' => 'left', 'size' => 'medium', 'caption' => ''],
             self::ImagePair => ['left_media_id' => null, 'right_media_id' => null, 'caption' => ''],
             self::Gallery => ['media_ids' => [], 'caption' => ''],
             self::Quote => ['text' => '', 'attribution' => ''],
