@@ -32,6 +32,7 @@ class PostController extends Controller
                     'status' => $post->status,
                     'publishedAt' => $post->published_at?->toIso8601String(),
                     'period' => $post->periodProps(),
+                    'previewLabel' => $post->previewLabel(),
                     'stopName' => $post->stop?->name,
                 ])
                 ->all(),

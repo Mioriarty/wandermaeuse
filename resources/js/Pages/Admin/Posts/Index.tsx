@@ -11,6 +11,8 @@ type Row = {
     status: string;
     publishedAt: string | null;
     period: PostPeriod | null;
+    /** Set while readers cannot see the entry yet - also when "published" with a date still ahead. */
+    previewLabel: string | null;
     stopName: string | null;
 };
 
@@ -75,16 +77,14 @@ export default function PostsIndex({ posts }: { posts: Row[] }) {
                                 </td>
                                 <td className="px-4 py-3">
                                     <div className="flex justify-end gap-2">
-                                        {post.status === 'published' && (
-                                            <a
-                                                href={`/blog/${post.slug}`}
-                                                target="_blank"
-                                                rel="noopener"
-                                                className="label-xs border border-hairline px-3 py-2 hover:bg-ink hover:text-paper"
-                                            >
-                                                Ansehen
-                                            </a>
-                                        )}
+                                        <a
+                                            href={`/blog/${post.slug}`}
+                                            target="_blank"
+                                            rel="noopener"
+                                            className="label-xs border border-hairline px-3 py-2 hover:bg-ink hover:text-paper"
+                                        >
+                                            {post.previewLabel ? 'Vorschau' : 'Ansehen'}
+                                        </a>
                                         <Button
                                             variant="danger"
                                             onClick={() => {
