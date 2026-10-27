@@ -11,6 +11,9 @@ export type ImageProps = {
     caption: string | null;
 };
 
+/** A picture as the admin's picker sees it: with the file name to search by. */
+export type LibraryImage = ImageProps & { originalName: string | null };
+
 export type StopProps = {
     id: number;
     name: string;

@@ -21,6 +21,11 @@ Reiseblog auf Laravel 13 + Inertia 3 + React 19 + TypeScript + Tailwind 4.
 - Fotos in Einträgen öffnen per Tippen in der Lightbox (`Lightbox.tsx`,
   eigene Pointer-Gesten, keine Bibliothek). Ein Block holt sie mit
   `useLightbox(bilder, unterschrift)` und gibt `open` als `onOpen` an `Frame`.
+- Bilder waehlt die Verwaltung ueberall im Modal `ImageSelectModal.tsx`
+  (ueber `MediaPicker`/`MultiMediaPicker`), mit derselben Lightbox zum
+  Auswaehlen. Die Bildliste teilen sich alle Felder einer Seite ueber
+  `MediaLibraryProvider`; hochgeladen wird per JSON an `/admin/bilder`, damit
+  ungespeicherte Aenderungen im Editor bleiben.
 - Einzelne Stellschrauben der Seite liegen als Schluessel und Wert in der
   Tabelle `settings` (`App\Models\Setting`). Bisher steht dort nur das
   Titelbild der Startseite, waehlbar unter `/admin/startseite`. Welches Bild

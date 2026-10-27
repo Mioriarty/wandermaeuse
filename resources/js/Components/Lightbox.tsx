@@ -24,6 +24,19 @@ type Gesture =
     | { kind: 'pinch'; distance: number; mid: Point; from: View };
 
 /**
+ * Lets the lightbox pick photos as well as show them - the admin's picture
+ * picker opens it this way.
+ */
+export type LightboxSelection = {
+    /** Where the photo stands in the selection, from 0; null when not selected. */
+    position: (id: number) => number | null;
+    /** Selects or deselects; returns why not, when the selection is full. */
+    toggle: (id: number) => string | null;
+    /** Show the position as a number - for selections whose order matters. */
+    numbered: boolean;
+};
+
+/**
  * Opens the photos of one block in a lightbox. The block passes `open` to its
  * frames and renders `lightbox` anywhere.
  */
@@ -46,16 +59,22 @@ export function useLightbox(images: ImageProps[], caption?: string | null) {
  * beside the photo closes. Native <dialog>, so Escape closes and focus
  * returns to the photo that was tapped.
  */
-function Lightbox({
+export function Lightbox({
     images,
     start,
     caption,
+    describe,
+    selection,
     onClose,
 }: {
     images: ImageProps[];
     start: number;
     caption?: string | null;
-    onClose: () => void;
+    /** A line per photo instead of its caption, e.g. its file name. */
+    describe?: (image: ImageProps) => string | null;
+    selection?: LightboxSelection;
+    /** Gets the photo shown last, so whatever opened the lightbox can follow. */
+    onClose: (index: number) => void;
 }) {
     const dialogRef = useRef<HTMLDialogElement | null>(null);
     const stageRef = useRef<HTMLDivElement | null>(null);
@@ -71,6 +90,7 @@ function Lightbox({
     const gesture = useRef<Gesture | null>(null);
     const lastTap = useRef<{ time: number; at: Point } | null>(null);
     const settleTimer = useRef<number | undefined>(undefined);
+    const [refusal, setRefusal] = useState<string | null>(null);
 
     const image = images[index];
     const fitted = fit(image, stage);
@@ -78,6 +98,8 @@ function Lightbox({
     useEffect(() => {
         const dialog = dialogRef.current;
         if (dialog && !dialog.open) dialog.showModal();
+        // showModal() focuses the close button, where Space would close it.
+        dialog?.focus();
 
         // The page behind must not scroll while a finger pans the photo.
         const root = document.documentElement;
@@ -117,6 +139,11 @@ function Lightbox({
 
     const close = () => dialogRef.current?.close();
 
+    const toggleSelected = () => {
+        if (!selection) return;
+        setRefusal(selection.toggle(image.id));
+    };
+
     /** Runs a change with transitions on, so it glides instead of jumping. */
     const settle = (change: () => void, then?: () => void) => {
         window.clearTimeout(settleTimer.current);
@@ -140,6 +167,7 @@ function Lightbox({
             () => setOffset({ x: -delta * (stage.width + GAP), y: 0 }),
             () => {
                 setIndex(target);
+                setRefusal(null);
                 setView(REST);
                 setOffset({ x: 0, y: 0 });
             },
@@ -265,21 +293,27 @@ function Lightbox({
     };
 
     const transition = settling ? `transform ${SETTLE_MS}ms ease-out, opacity ${SETTLE_MS}ms ease-out` : 'none';
-    const text = caption || image.caption;
+    const text = describe ? describe(image) : caption || image.caption;
+    const position = selection?.position(image.id) ?? null;
 
     return (
         <dialog
             ref={dialogRef}
-            onClose={onClose}
+            onClose={() => onClose(index)}
             onKeyDown={(e) => {
                 if (e.key === 'ArrowLeft') go(-1);
                 if (e.key === 'ArrowRight') go(1);
+                // Space on a focused button already presses that button.
+                if (selection && e.key === ' ' && !(e.target instanceof HTMLButtonElement)) {
+                    e.preventDefault();
+                    toggleSelected();
+                }
             }}
             aria-label="Bild"
             // Focus the dialog, not the close button: keys work at once and no
             // focus ring sits on the photo after a tap.
-            autoFocus
-            className="fixed inset-0 m-0 hidden h-full max-h-none w-full max-w-none flex-col overflow-hidden bg-transparent p-0 text-paper open:flex backdrop:bg-transparent"
+            tabIndex={-1}
+            className="fixed inset-0 m-0 hidden h-full max-h-none w-full max-w-none flex-col overflow-hidden bg-transparent p-0 text-paper outline-none open:flex backdrop:bg-transparent"
         >
             <div
                 aria-hidden
@@ -363,19 +397,47 @@ function Lightbox({
                 {text && (
                     <p className="mx-auto line-clamp-3 max-w-2xl text-center text-sm leading-snug text-paper/80">{text}</p>
                 )}
-                {images.length > 1 && (
-                    <div className="mt-1 flex items-center justify-center">
-                        <NavButton label="Vorheriges Bild" disabled={index === 0} onClick={() => go(-1)}>
-                            ←
-                        </NavButton>
-                        <span className="label-xs w-16 text-center tabular-nums text-paper/80">
-                            {index + 1} / {images.length}
-                        </span>
-                        <NavButton label="Nächstes Bild" disabled={index === images.length - 1} onClick={() => go(1)}>
-                            →
-                        </NavButton>
+                {(images.length > 1 || selection) && (
+                    <div className="mt-1 flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
+                        {images.length > 1 && (
+                            <div className="flex items-center">
+                                <NavButton label="Vorheriges Bild" disabled={index === 0} onClick={() => go(-1)}>
+                                    ←
+                                </NavButton>
+                                <span className="label-xs w-16 text-center tabular-nums text-paper/80">
+                                    {index + 1} / {images.length}
+                                </span>
+                                <NavButton
+                                    label="Nächstes Bild"
+                                    disabled={index === images.length - 1}
+                                    onClick={() => go(1)}
+                                >
+                                    →
+                                </NavButton>
+                            </div>
+                        )}
+                        {selection && (
+                            <button
+                                type="button"
+                                onClick={toggleSelected}
+                                aria-pressed={position !== null}
+                                className={`label-xs flex min-h-11 items-center gap-2 border px-4 focus-visible:outline-paper ${
+                                    position !== null
+                                        ? 'border-accent bg-accent text-paper hover:bg-accent/85'
+                                        : 'border-paper/40 hover:border-paper hover:bg-paper/10'
+                                }`}
+                            >
+                                {position === null
+                                    ? 'Auswählen'
+                                    : selection.numbered
+                                      ? `✓ Ausgewählt · Nr. ${position + 1}`
+                                      : '✓ Ausgewählt'}
+                                <span className="font-sans normal-case tracking-normal text-paper/60">Leertaste</span>
+                            </button>
+                        )}
                     </div>
                 )}
+                {refusal && <p className="mt-1 text-center text-xs text-paper/80">{refusal}</p>}
             </div>
         </dialog>
     );

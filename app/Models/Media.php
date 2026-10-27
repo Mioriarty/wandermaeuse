@@ -64,4 +64,18 @@ class Media extends Model
             'caption' => $this->caption,
         ];
     }
+
+    /**
+     * What the admin's picture picker needs on top: the file name to search
+     * by. Never on public pages - it would leak how the photos are named.
+     *
+     * @return array<string, mixed>
+     */
+    public function toLibraryProps(): array
+    {
+        return [
+            ...$this->toImageProps(),
+            'originalName' => $this->original_name,
+        ];
+    }
 }

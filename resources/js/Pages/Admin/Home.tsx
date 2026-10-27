@@ -1,20 +1,31 @@
 import { Head, useForm } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import MediaPicker from '@/Components/Admin/MediaPicker';
+import { MediaLibraryProvider, useMediaLibrary } from '@/Components/Admin/MediaLibrary';
 import { Button, Panel } from '@/Components/Admin/Ui';
-import type { ImageProps } from '@/types';
+import type { ImageProps, LibraryImage } from '@/types';
 
 type Props = {
     mediaId: number | null;
     /** Was ohne eigene Wahl zu sehen wäre: das neueste Aufmacherfoto. */
     fallback: ImageProps | null;
-    mediaLibrary: ImageProps[];
+    mediaLibrary: LibraryImage[];
 };
 
-export default function AdminHome({ mediaId, fallback, mediaLibrary }: Props) {
-    const { data, setData, put, processing, isDirty } = useForm({ media_id: mediaId });
+export default function AdminHome({ mediaLibrary, ...props }: Props) {
+    return (
+        <MediaLibraryProvider initial={mediaLibrary}>
+            <HomeSettings {...props} />
+        </MediaLibraryProvider>
+    );
+}
 
-    const chosen = mediaLibrary.find((m) => m.id === data.media_id) ?? null;
+function HomeSettings({ mediaId, fallback }: Omit<Props, 'mediaLibrary'>) {
+    const { data, setData, put, processing, isDirty } = useForm({ media_id: mediaId });
+    // From the shared library, so a picture just uploaded in the picker shows.
+    const { images } = useMediaLibrary();
+
+    const chosen = images.find((m) => m.id === data.media_id) ?? null;
     // Die gleiche Regel wie auf der Startseite: eigene Wahl, sonst Aufmacher.
     const shown = chosen ?? fallback;
 
@@ -49,7 +60,6 @@ export default function AdminHome({ mediaId, fallback, mediaLibrary }: Props) {
                     </p>
 
                     <MediaPicker
-                        library={mediaLibrary}
                         selected={data.media_id}
                         onSelect={(id) => setData('media_id', id)}
                         label="Eigenes Titelbild"

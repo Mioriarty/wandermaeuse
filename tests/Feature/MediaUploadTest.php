@@ -139,4 +139,23 @@ class MediaUploadTest extends TestCase
 
         $this->assertSame(0, Media::count());
     }
+
+    public function test_the_picker_uploads_without_leaving_the_editor(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->postJson('/admin/bilder', ['files' => [UploadedFile::fake()->image('vulkan.jpg', 800, 1200)]])
+            ->assertCreated()
+            ->assertJsonPath('media.0.originalName', 'vulkan.jpg')
+            ->assertJsonPath('media.0.width', 800)
+            ->assertJsonPath('media.0.height', 1200);
+
+        $this->assertSame(1, Media::count());
+    }
+
+    public function test_a_rejected_picker_upload_says_why_in_german(): void
+    {
+        $this->actingAs(User::factory()->create())
+            ->postJson('/admin/bilder', ['files' => [UploadedFile::fake()->create('notizen.pdf', 10, 'application/pdf')]])
+            ->assertJsonValidationErrors(['files.0' => 'Das ist kein Bild.']);
+    }
 }

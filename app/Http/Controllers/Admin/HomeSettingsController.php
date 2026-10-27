@@ -18,7 +18,7 @@ class HomeSettingsController extends Controller
         return Inertia::render('Admin/Home', [
             'mediaId' => HomeHero::chosen()?->id,
             'fallback' => HomeHero::fallback()?->toImageProps(),
-            'mediaLibrary' => Media::latest()->take(300)->get()->map->toImageProps()->all(),
+            'mediaLibrary' => Media::latest()->take(300)->get()->map->toLibraryProps()->all(),
         ]);
     }
 

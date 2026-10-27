@@ -211,7 +211,7 @@ class PostController extends Controller
                 ],
                 BlockType::cases(),
             ),
-            'mediaLibrary' => Media::latest()->take(300)->get()->map->toImageProps()->all(),
+            'mediaLibrary' => Media::latest()->take(300)->get()->map->toLibraryProps()->all(),
         ];
     }
 }

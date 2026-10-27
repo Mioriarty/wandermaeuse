@@ -4,7 +4,7 @@ import MediaPicker, { MultiMediaPicker } from '@/Components/Admin/MediaPicker';
 import RichText from '@/Components/Admin/RichText';
 import BlockTypeDialog from '@/Components/Admin/BlockTypeDialog';
 import { convertBlock } from '@/Components/Admin/blockConversion';
-import type { BlockType, ImageProps } from '@/types';
+import type { BlockType } from '@/types';
 
 export type EditorBlock = {
     key: string;
@@ -22,10 +22,9 @@ type Props = {
     blocks: EditorBlock[];
     onChange: (blocks: EditorBlock[]) => void;
     blockTypes: BlockTypeOption[];
-    library: ImageProps[];
 };
 
-export default function BlockEditor({ blocks, onChange, blockTypes, library }: Props) {
+export default function BlockEditor({ blocks, onChange, blockTypes }: Props) {
     // Which dialog is open: adding a section before `index`, or converting
     // the section at `index` into another pattern.
     const [dialog, setDialog] = useState<{ mode: 'add' | 'convert'; index: number } | null>(null);
@@ -108,11 +107,7 @@ export default function BlockEditor({ blocks, onChange, blockTypes, library }: P
                                 </div>
 
                                 <div className="p-4">
-                                    <BlockFields
-                                        block={block}
-                                        library={library}
-                                        patch={(data) => patch(index, data)}
-                                    />
+                                    <BlockFields block={block} patch={(data) => patch(index, data)} />
                                 </div>
                             </div>
                         </li>
@@ -176,11 +171,9 @@ function Inserter({ onClick, text }: { onClick: () => void; text?: string }) {
 
 function BlockFields({
     block,
-    library,
     patch,
 }: {
     block: EditorBlock;
-    library: ImageProps[];
     patch: (data: Record<string, unknown>) => void;
 }) {
     const str = (key: string) => (block.data[key] as string) ?? '';
@@ -211,7 +204,7 @@ function BlockFields({
         case 'image_full':
             return (
                 <div className="grid gap-4">
-                    <MediaPicker library={library} selected={num('media_id')} onSelect={(id) => patch({ media_id: id })} />
+                    <MediaPicker selected={num('media_id')} onSelect={(id) => patch({ media_id: id })} />
                     <input
                         className={inputClass}
                         placeholder="Bildunterschrift (optional)"
@@ -233,7 +226,7 @@ function BlockFields({
             return (
                 <div className="grid gap-4">
                     <MultiMediaPicker
-                        library={library}
+                        title="Bilder neben dem Text"
                         selected={(block.data.media_ids as number[]) ?? []}
                         onChange={(media_ids) => patch({ media_ids })}
                     />
@@ -275,20 +268,13 @@ function BlockFields({
         case 'image_pair':
             return (
                 <div className="grid gap-4">
-                    <div className="grid gap-4 md:grid-cols-2">
-                        <MediaPicker
-                            label="Linkes Bild"
-                            library={library}
-                            selected={num('left_media_id')}
-                            onSelect={(id) => patch({ left_media_id: id })}
-                        />
-                        <MediaPicker
-                            label="Rechtes Bild"
-                            library={library}
-                            selected={num('right_media_id')}
-                            onSelect={(id) => patch({ right_media_id: id })}
-                        />
-                    </div>
+                    <MultiMediaPicker
+                        title="Bildpaar wählen"
+                        max={2}
+                        slotLabels={['Links', 'Rechts']}
+                        selected={[num('left_media_id'), num('right_media_id')].filter((id) => id !== null)}
+                        onChange={(ids) => patch({ left_media_id: ids[0] ?? null, right_media_id: ids[1] ?? null })}
+                    />
                     <input
                         className={inputClass}
                         placeholder="Bildunterschrift (optional)"
@@ -302,7 +288,7 @@ function BlockFields({
             return (
                 <div className="grid gap-4">
                     <MultiMediaPicker
-                        library={library}
+                        title="Bilder für die Galerie"
                         selected={(block.data.media_ids as number[]) ?? []}
                         onChange={(media_ids) => patch({ media_ids })}
                     />
