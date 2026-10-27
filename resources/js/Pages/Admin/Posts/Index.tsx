@@ -81,7 +81,7 @@ export default function PostsIndex({ posts }: { posts: Row[] }) {
                                             href={`/blog/${post.slug}`}
                                             target="_blank"
                                             rel="noopener"
-                                            className="label-xs border border-hairline px-3 py-2 hover:bg-ink hover:text-paper"
+                                            className="label-xs inline-flex min-h-10 items-center border border-hairline px-4 hover:bg-ink hover:text-paper"
                                         >
                                             {post.previewLabel ? 'Vorschau' : 'Ansehen'}
                                         </a>
