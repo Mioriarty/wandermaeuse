@@ -18,7 +18,7 @@ type Props = {
         readingMinutes: number;
         period: PostPeriod | null;
         stop: StopProps | null;
-        status: string;
+        previewLabel: string | null;
     };
     /** Angemeldet und noch nicht veroeffentlicht: nur du siehst das hier. */
     isPreview: boolean;
@@ -27,11 +27,6 @@ type Props = {
     comments: CommentProps[];
     stops: StopProps[];
     neighbours: { previous: PostCard | null; next: PostCard | null };
-};
-
-const PREVIEW_LABEL: Record<string, string> = {
-    draft: 'Entwurf',
-    scheduled: 'Geplant',
 };
 
 export default function BlogShow({
@@ -56,7 +51,7 @@ export default function BlogShow({
                     role="status"
                     className="label-xs flex flex-wrap items-center justify-center gap-x-3 gap-y-1 bg-accent px-5 py-3 text-center text-paper"
                 >
-                    <span>Vorschau · {PREVIEW_LABEL[post.status] ?? post.status}</span>
+                    <span>Vorschau · {post.previewLabel}</span>
                     <span className="font-sans normal-case tracking-normal opacity-90">
                         Nur für dich sichtbar, solange du angemeldet bist.
                     </span>

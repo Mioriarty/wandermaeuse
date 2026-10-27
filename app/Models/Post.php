@@ -76,6 +76,35 @@ class Post extends Model
             ->where('published_at', '<=', now());
     }
 
+    /**
+     * What the reader-facing lists show. Logged in, that is every entry, so
+     * the site can be read as it will look once the drafts are out; feed,
+     * sitemap and newsletter stick to published() regardless.
+     */
+    public function scopeListed(Builder $query, bool $withUnpublished): Builder
+    {
+        return $withUnpublished ? $query : $query->published();
+    }
+
+    /**
+     * Newest first. An entry without a date has not gone out yet, so it is
+     * newer than all of them.
+     */
+    public function scopeNewestFirst(Builder $query): Builder
+    {
+        return $query->orderByRaw('published_at is null desc')->latest('published_at');
+    }
+
+    /** "Entwurf" or "Geplant" while readers cannot see the entry yet, else null. */
+    public function previewLabel(): ?string
+    {
+        if ($this->isPublished()) {
+            return null;
+        }
+
+        return $this->status === self::STATUS_DRAFT ? 'Entwurf' : 'Geplant';
+    }
+
     public function isPublished(): bool
     {
         return $this->status === self::STATUS_PUBLISHED
@@ -149,6 +178,7 @@ class Post extends Model
                 'country' => $this->stop->country,
             ] : null,
             'cover' => $this->coverMedia?->toImageProps(),
+            'previewLabel' => $this->previewLabel(),
         ];
     }
 }

@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Post;
+use App\Models\Stop;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Inertia\Testing\AssertableInertia;
@@ -141,25 +142,78 @@ class PostPublishingTest extends TestCase
     }
 
     /**
-     * Die Vorschau oeffnet die oeffentliche Seite - sie darf den Entwurf aber
-     * nirgends sonst auftauchen lassen, auch nicht fuer die angemeldete Person.
+     * Angemeldet zeigen die Listen der Seite auch, was noch nicht draussen
+     * ist - markiert, damit es niemand fuer live haelt. Feed und Sitemap
+     * gehen an Fremde und bleiben bei den veroeffentlichten.
      */
-    public function test_a_preview_does_not_leak_the_draft_into_listings(): void
+    public function test_a_logged_in_reader_sees_drafts_flagged_in_the_lists(): void
     {
+        $stop = Stop::create([
+            'name' => 'Lima', 'slug' => 'lima', 'country' => 'Peru', 'lat' => -12.0464, 'lng' => -77.0428,
+        ]);
+        Post::create([
+            'title' => 'Live',
+            'slug' => 'live-liste',
+            'stop_id' => $stop->id,
+            'status' => Post::STATUS_PUBLISHED,
+            'published_at' => now()->subDay(),
+        ]);
         Post::create([
             'title' => 'Entwurf',
             'slug' => 'entwurf-liste',
+            'stop_id' => $stop->id,
             'status' => Post::STATUS_DRAFT,
             'published_at' => null,
         ]);
 
         $admin = User::factory()->create();
 
-        $this->actingAs($admin)->get('/blog')->assertInertia(
-            fn (AssertableInertia $page) => $page->where('total', 0),
-        );
+        // Ohne Datum ist ein Entwurf juenger als alles Veroeffentlichte.
+        $this->actingAs($admin)->get('/')->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('posts.0.slug', 'entwurf-liste')
+            ->where('posts.0.previewLabel', 'Entwurf')
+            ->where('posts.1.previewLabel', null));
+        $this->actingAs($admin)->get('/blog')->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('total', 2)
+            ->where('groups.0.posts.0.previewLabel', 'Entwurf'));
+        $this->actingAs($admin)->get('/reise')->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('stops.0.posts.0.slug', 'entwurf-liste')
+            ->where('stops.0.posts.0.previewLabel', 'Entwurf'));
+
         $this->actingAs($admin)->get('/feed.xml')->assertDontSee('entwurf-liste');
         $this->actingAs($admin)->get('/sitemap.xml')->assertDontSee('entwurf-liste');
+    }
+
+    public function test_a_guest_sees_no_drafts_in_the_lists(): void
+    {
+        $stop = Stop::create([
+            'name' => 'Lima', 'slug' => 'lima', 'country' => 'Peru', 'lat' => -12.0464, 'lng' => -77.0428,
+        ]);
+        Post::create([
+            'title' => 'Geplant',
+            'slug' => 'geplant-liste',
+            'stop_id' => $stop->id,
+            'status' => Post::STATUS_SCHEDULED,
+            'published_at' => now()->addDay(),
+        ]);
+
+        $this->get('/')->assertInertia(fn (AssertableInertia $page) => $page->where('posts', []));
+        $this->get('/blog')->assertInertia(fn (AssertableInertia $page) => $page->where('total', 0));
+        $this->get('/reise')->assertInertia(fn (AssertableInertia $page) => $page->where('stops.0.posts', []));
+    }
+
+    public function test_a_scheduled_post_is_flagged_as_planned(): void
+    {
+        Post::create([
+            'title' => 'Geplant',
+            'slug' => 'geplant-flagge',
+            'status' => Post::STATUS_SCHEDULED,
+            'published_at' => now()->addDay(),
+        ]);
+
+        $this->actingAs(User::factory()->create())->get('/blog')->assertInertia(
+            fn (AssertableInertia $page) => $page->where('groups.0.posts.0.previewLabel', 'Geplant'),
+        );
     }
 
     public function test_a_draft_without_a_date_has_no_neighbours(): void

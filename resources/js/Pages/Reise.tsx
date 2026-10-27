@@ -1,5 +1,6 @@
 import { Head, Link } from '@inertiajs/react';
 import PublicLayout from '@/Layouts/PublicLayout';
+import DraftFlag from '@/Components/DraftFlag';
 import RouteMap from '@/Components/RouteMap';
 import { formatStay } from '@/lib/format';
 import { useState } from 'react';
@@ -7,7 +8,7 @@ import type { StopProps } from '@/types';
 
 type StopWithPosts = StopProps & {
     note: string | null;
-    posts: { title: string; slug: string }[];
+    posts: { title: string; slug: string; previewLabel: string | null }[];
 };
 
 export default function Reise({ stops }: { stops: StopWithPosts[] }) {
@@ -62,13 +63,14 @@ export default function Reise({ stops }: { stops: StopWithPosts[] }) {
                             {stop.posts.length > 0 && (
                                 <ul className="mt-4 flex flex-col gap-2">
                                     {stop.posts.map((post) => (
-                                        <li key={post.slug}>
+                                        <li key={post.slug} className="flex items-center gap-3">
                                             <Link
                                                 href={`/blog/${post.slug}`}
                                                 className="label-xs inline-flex min-h-11 items-center hover:text-accent"
                                             >
                                                 {post.title} ↗
                                             </Link>
+                                            <DraftFlag label={post.previewLabel} />
                                         </li>
                                     ))}
                                 </ul>

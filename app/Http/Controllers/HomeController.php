@@ -6,6 +6,7 @@ use App\Models\Post;
 use App\Models\Stop;
 use App\Support\HomeHero;
 use App\Support\Seo;
+use Illuminate\Support\Facades\Auth;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -13,9 +14,9 @@ class HomeController extends Controller
 {
     public function __invoke(): Response
     {
-        $posts = Post::published()
+        $posts = Post::listed(Auth::check())
             ->with(['stop', 'coverMedia'])
-            ->latest('published_at')
+            ->newestFirst()
             ->take(4)
             ->get();
 

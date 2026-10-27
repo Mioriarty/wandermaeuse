@@ -64,6 +64,8 @@ export type PostCard = {
     readingMinutes: number;
     stop: { name: string; country: string } | null;
     cover: ImageProps | null;
+    /** "Entwurf" or "Geplant" - only ever set for someone logged in. */
+    previewLabel: string | null;
 };
 
 export type CommentImageProps = {

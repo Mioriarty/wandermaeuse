@@ -13,9 +13,9 @@ class PostController extends Controller
 {
     public function index(): Response
     {
-        $posts = Post::published()
+        $posts = Post::listed(Auth::check())
             ->with(['stop', 'coverMedia'])
-            ->latest('published_at')
+            ->newestFirst()
             ->get();
 
         // Grouped by country, but kept in publication order - the trip reads
@@ -84,7 +84,7 @@ class PostController extends Controller
                 'readingMinutes' => $post->reading_minutes,
                 'period' => $post->periodProps(),
                 'stop' => $post->stop?->toMapProps(),
-                'status' => $post->status,
+                'previewLabel' => $post->previewLabel(),
             ],
             'isPreview' => $isPreview,
             'blocks' => $post->blocksWithMedia(),

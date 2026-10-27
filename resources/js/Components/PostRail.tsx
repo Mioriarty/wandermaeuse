@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import DraftFlag from '@/Components/DraftFlag';
 import Frame from '@/Components/Frame';
 import { formatPostDate } from '@/lib/format';
 import type { PostCard as PostCardType } from '@/types';
@@ -83,9 +84,10 @@ export default function PostRail({ posts }: { posts: PostCardType[] }) {
                                 {post.title}
                             </h3>
 
-                            <p className="label-xs mt-2 flex flex-wrap gap-x-3 gap-y-1 text-graphite">
+                            <p className="label-xs mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-graphite">
                                 <span>{formatPostDate(post)}</span>
                                 {post.stop && <span>{post.stop.name}</span>}
+                                <DraftFlag label={post.previewLabel} />
                             </p>
 
                             {post.excerpt && (
