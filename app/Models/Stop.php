@@ -42,6 +42,7 @@ class Stop extends Model
             'lat' => $this->lat,
             'lng' => $this->lng,
             'arrivedOn' => $this->arrived_on?->toDateString(),
+            'departedOn' => $this->departed_on?->toDateString(),
             'position' => $this->position,
         ];
     }

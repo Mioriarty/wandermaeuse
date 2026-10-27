@@ -1,7 +1,7 @@
 import { Head, Link } from '@inertiajs/react';
 import PublicLayout from '@/Layouts/PublicLayout';
 import RouteMap from '@/Components/RouteMap';
-import { formatDate } from '@/lib/format';
+import { formatStay } from '@/lib/format';
 import { useState } from 'react';
 import type { StopProps } from '@/types';
 
@@ -49,7 +49,7 @@ export default function Reise({ stops }: { stops: StopWithPosts[] }) {
                     >
                         <div className="label-xs flex gap-4 text-graphite sm:col-span-3 sm:block">
                             <span className="tabular-nums">{String(i + 1).padStart(2, '0')}</span>
-                            <span className="sm:mt-1 sm:block">{formatDate(stop.arrivedOn)}</span>
+                            <span className="sm:mt-1 sm:block">{formatStay(stop)}</span>
                         </div>
                         <div className="sm:col-span-9">
                             <h2 className="font-display text-2xl font-medium leading-tight sm:text-3xl">

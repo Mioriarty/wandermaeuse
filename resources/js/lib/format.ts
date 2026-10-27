@@ -37,6 +37,11 @@ export function formatPostDate(post: {
     return post.period ? formatPeriod(post.period.from, post.period.until) : formatDate(post.publishedAt);
 }
 
+/** A stop's stay, or just its arrival day; empty when neither is known. */
+export function formatStay(stop: { arrivedOn: string | null; departedOn: string | null }): string {
+    return stop.arrivedOn ? formatPeriod(stop.arrivedOn, stop.departedOn ?? stop.arrivedOn) : '';
+}
+
 /** 14.03.2026 */
 export function formatShortDate(iso: string | null): string {
     if (!iso) return '';

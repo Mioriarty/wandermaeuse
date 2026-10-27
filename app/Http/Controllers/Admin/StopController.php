@@ -19,7 +19,6 @@ class StopController extends Controller
             'stops' => Stop::withCount('posts')->orderBy('position')->get()->map(fn (Stop $stop) => [
                 ...$stop->toMapProps(),
                 'note' => $stop->note,
-                'departedOn' => $stop->departed_on?->toDateString(),
                 'postsCount' => $stop->posts_count,
             ])->all(),
         ]);
@@ -77,9 +76,12 @@ class StopController extends Controller
             'country' => ['required', 'string', 'max:80'],
             'lat' => ['required', 'numeric', 'between:-90,90'],
             'lng' => ['required', 'numeric', 'between:-180,180'],
-            'arrived_on' => ['nullable', 'date'],
+            'arrived_on' => ['nullable', 'date', 'required_with:departed_on'],
             'departed_on' => ['nullable', 'date', 'after_or_equal:arrived_on'],
             'note' => ['nullable', 'string', 'max:1000'],
+        ], [
+            'arrived_on.required_with' => 'Eine Abreise braucht auch eine Ankunft.',
+            'departed_on.after_or_equal' => 'Die Abreise liegt vor der Ankunft.',
         ]);
 
         $data['slug'] = $data['slug'] ?: Str::slug($data['name']);

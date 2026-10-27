@@ -3,10 +3,10 @@ import { useState } from 'react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import RouteMap from '@/Components/RouteMap';
 import { Button, Field, Panel, inputClass } from '@/Components/Admin/Ui';
-import { formatShortDate } from '@/lib/format';
+import { formatStay } from '@/lib/format';
 import type { StopProps } from '@/types';
 
-type Row = StopProps & { note: string | null; departedOn: string | null; postsCount: number };
+type Row = StopProps & { note: string | null; postsCount: number };
 
 const BLANK = {
     name: '',
@@ -82,7 +82,7 @@ export default function Stops({ stops }: { stops: Row[] }) {
                                 <tr className="hairline-b">
                                     <th className="label-xs px-4 py-3 text-left text-graphite">#</th>
                                     <th className="label-xs px-4 py-3 text-left text-graphite">Ort</th>
-                                    <th className="label-xs px-4 py-3 text-left text-graphite">Ankunft</th>
+                                    <th className="label-xs px-4 py-3 text-left text-graphite">Zeitraum</th>
                                     <th className="label-xs px-4 py-3 text-left text-graphite">Einträge</th>
                                     <th className="label-xs px-4 py-3 text-right text-graphite">Aktionen</th>
                                 </tr>
@@ -96,7 +96,7 @@ export default function Stops({ stops }: { stops: Row[] }) {
                                             <span className="ml-2 text-graphite">{stop.country}</span>
                                         </td>
                                         <td className="px-4 py-3 text-graphite tabular-nums">
-                                            {formatShortDate(stop.arrivedOn)}
+                                            {formatStay(stop) || '–'}
                                         </td>
                                         <td className="px-4 py-3 text-graphite tabular-nums">{stop.postsCount}</td>
                                         <td className="px-4 py-3">
@@ -207,6 +207,7 @@ export default function Stops({ stops }: { stops: Row[] }) {
                                     type="date"
                                     className={inputClass}
                                     value={form.data.departed_on}
+                                    min={form.data.arrived_on || undefined}
                                     onChange={(e) => form.setData('departed_on', e.target.value)}
                                 />
                             </Field>

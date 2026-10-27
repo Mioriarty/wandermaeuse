@@ -10,6 +10,7 @@ use App\Models\Post;
 use App\Models\Stop;
 use App\Models\Subscriber;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 
@@ -138,6 +139,10 @@ class DemoTripSeeder extends Seeder
         $stops = [];
 
         foreach ($rows as $position => [$key, $name, $country, $lat, $lng, $arrived, $note]) {
+            // Weiter geht es am Tag vor der naechsten Ankunft; an der letzten
+            // Station sind wir noch.
+            $next = $rows[$position + 1][5] ?? null;
+
             $stops[$key] = Stop::create([
                 'name' => $name,
                 'slug' => Str::slug($name),
@@ -145,6 +150,7 @@ class DemoTripSeeder extends Seeder
                 'lat' => $lat,
                 'lng' => $lng,
                 'arrived_on' => $arrived,
+                'departed_on' => $next ? Carbon::parse($next)->subDay()->toDateString() : null,
                 'note' => $note,
                 'position' => $position,
             ]);

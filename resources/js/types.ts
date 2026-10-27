@@ -19,6 +19,8 @@ export type StopProps = {
     lat: number;
     lng: number;
     arrivedOn: string | null;
+    /** Leer heisst: nur der Ankunftstag ist bekannt. */
+    departedOn: string | null;
     position: number;
 };
 
