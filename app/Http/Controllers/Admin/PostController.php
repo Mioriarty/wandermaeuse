@@ -19,15 +19,22 @@ class PostController extends Controller
     public function index(): Response
     {
         return Inertia::render('Admin/Posts/Index', [
-            'posts' => Post::with('stop')->latest('updated_at')->get()->map(fn (Post $post) => [
-                'id' => $post->id,
-                'title' => $post->title,
-                'slug' => $post->slug,
-                'status' => $post->status,
-                'publishedAt' => $post->published_at?->toIso8601String(),
-                'stopName' => $post->stop?->name,
-                'updatedAt' => $post->updated_at?->toIso8601String(),
-            ])->all(),
+            // Newest first by the days an entry tells of, else by when it went
+            // online. Entries with neither are still being written and go on
+            // top, most recently touched first (the sort is stable).
+            'posts' => Post::with('stop')->latest('updated_at')->get()
+                ->sortByDesc(fn (Post $post) => ($post->period_starts_on ?? $post->published_at)?->getTimestamp() ?? PHP_INT_MAX)
+                ->values()
+                ->map(fn (Post $post) => [
+                    'id' => $post->id,
+                    'title' => $post->title,
+                    'slug' => $post->slug,
+                    'status' => $post->status,
+                    'publishedAt' => $post->published_at?->toIso8601String(),
+                    'period' => $post->periodProps(),
+                    'stopName' => $post->stop?->name,
+                ])
+                ->all(),
         ]);
     }
 

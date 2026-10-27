@@ -118,4 +118,27 @@ class PostPeriodTest extends TestCase
                 ->where('groups.0.posts.1.period', null),
         );
     }
+
+    public function test_the_admin_list_is_sorted_by_period_then_publication_date(): void
+    {
+        $make = fn (string $slug, array $attributes) => Post::create([
+            'title' => $slug,
+            'slug' => $slug,
+            'status' => Post::STATUS_DRAFT,
+            ...$attributes,
+        ]);
+
+        $make('maerz-erlebt', ['period_starts_on' => '2026-03-16', 'published_at' => '2026-01-01 10:00']);
+        $make('februar-online', ['published_at' => '2026-02-20 10:00']);
+        $make('januar-erlebt', ['period_starts_on' => '2026-01-10', 'published_at' => '2026-04-01 10:00']);
+        $make('undatiert', []);
+
+        $this->actingAs(User::factory()->create())
+            ->get('/admin/eintraege')
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->where('posts.0.slug', 'undatiert')
+                ->where('posts.1.slug', 'maerz-erlebt')
+                ->where('posts.2.slug', 'februar-online')
+                ->where('posts.3.slug', 'januar-erlebt'));
+    }
 }

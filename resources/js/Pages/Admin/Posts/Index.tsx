@@ -1,7 +1,8 @@
 import { Head, Link, router } from '@inertiajs/react';
 import AdminLayout from '@/Layouts/AdminLayout';
 import { Button } from '@/Components/Admin/Ui';
-import { formatShortDate } from '@/lib/format';
+import { formatPeriod, formatShortDate } from '@/lib/format';
+import type { PostPeriod } from '@/types';
 
 type Row = {
     id: number;
@@ -9,8 +10,8 @@ type Row = {
     slug: string;
     status: string;
     publishedAt: string | null;
+    period: PostPeriod | null;
     stopName: string | null;
-    updatedAt: string | null;
 };
 
 const STATUS: Record<string, string> = {
@@ -38,7 +39,7 @@ export default function PostsIndex({ posts }: { posts: Row[] }) {
                             <th className="label-xs px-4 py-3 text-left text-graphite">Titel</th>
                             <th className="label-xs px-4 py-3 text-left text-graphite">Station</th>
                             <th className="label-xs px-4 py-3 text-left text-graphite">Status</th>
-                            <th className="label-xs px-4 py-3 text-left text-graphite">Datum</th>
+                            <th className="label-xs px-4 py-3 text-left text-graphite">Zeitraum</th>
                             <th className="label-xs px-4 py-3 text-right text-graphite">Aktionen</th>
                         </tr>
                     </thead>
@@ -62,9 +63,15 @@ export default function PostsIndex({ posts }: { posts: Row[] }) {
                                     <span className={post.status === 'published' ? 'text-ink' : 'text-graphite'}>
                                         {STATUS[post.status] ?? post.status}
                                     </span>
+                                    {/* A draft's date is only a plan nobody has committed to yet. */}
+                                    {post.status !== 'draft' && post.publishedAt && (
+                                        <span className="block text-xs text-graphite tabular-nums">
+                                            {formatShortDate(post.publishedAt)}
+                                        </span>
+                                    )}
                                 </td>
                                 <td className="px-4 py-3 text-graphite tabular-nums">
-                                    {formatShortDate(post.publishedAt ?? post.updatedAt)}
+                                    {post.period ? formatPeriod(post.period.from, post.period.until) : '–'}
                                 </td>
                                 <td className="px-4 py-3">
                                     <div className="flex justify-end gap-2">
