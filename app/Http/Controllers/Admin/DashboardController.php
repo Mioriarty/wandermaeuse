@@ -8,6 +8,7 @@ use App\Models\Media;
 use App\Models\Post;
 use App\Models\Stop;
 use App\Models\Subscriber;
+use App\Support\NightCoverage;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -25,6 +26,7 @@ class DashboardController extends Controller
                 'subscribers' => Subscriber::mailable()->count(),
                 'pendingSubscribers' => Subscriber::whereNull('confirmed_at')->whereNull('unsubscribed_at')->count(),
             ],
+            'nightsAhead' => NightCoverage::ahead(),
             'recentPosts' => Post::latest('updated_at')->take(5)->get()->map(fn (Post $post) => [
                 'id' => $post->id,
                 'title' => $post->title,

@@ -21,6 +21,7 @@ class AdminAccessTest extends TestCase
             ['/admin/eintraege/neu'],
             ['/admin/bilder'],
             ['/admin/stationen'],
+            ['/admin/unterkuenfte'],
             ['/admin/kommentare'],
             ['/admin/newsletter'],
         ];

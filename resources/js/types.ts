@@ -96,3 +96,48 @@ export type SharedProps = {
     flash: { success: string | null; error: string | null };
     seo: Record<string, string>;
 };
+
+export type BookingKindOption = { value: string; label: string; transport: boolean };
+
+/** Eine Unterkunft, ein Workaway oder eine Nachtfahrt. checkOut ist der Abreisetag, selbst keine Nacht mehr. */
+export type BookingProps = {
+    id: number;
+    kind: string;
+    title: string;
+    location: string | null;
+    stopId: number | null;
+    stopName: string | null;
+    url: string | null;
+    checkIn: string;
+    checkOut: string;
+    nights: number;
+    status: 'planned' | 'booked';
+    paid: boolean;
+    /** Wie bezahlt, als Dezimalzahl-String ("180.00"). */
+    priceAmount: string | null;
+    currency: string | null;
+    priceEurCents: number | null;
+    notes: string | null;
+};
+
+export type NightState = 'booked' | 'planned' | 'missing';
+
+export type NightProps = {
+    date: string;
+    state: NightState;
+    bookingIds: number[];
+    doubleBooked: boolean;
+};
+
+/** Zusammenhaengende Naechte; until ist die letzte Nacht, nicht der Morgen danach. */
+export type NightRun = { from: string; until: string; nights: number; state: string };
+
+export type NightsAhead = {
+    from: string;
+    until: string;
+    missing: number;
+    planned: number;
+    doubleBooked: number;
+    gaps: NightRun[];
+    conflicts: NightRun[];
+};

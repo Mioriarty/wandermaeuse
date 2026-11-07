@@ -31,6 +31,17 @@ Reiseblog auf Laravel 13 + Inertia 3 + React 19 + TypeScript + Tailwind 4.
   Titelbild der Startseite, waehlbar unter `/admin/startseite`. Welches Bild
   die Startseite zeigt, entscheidet `App\Support\HomeHero` – eine Stelle fuer
   beide Seiten, damit Verwaltung und Startseite nicht auseinanderlaufen.
+- Unterkuenfte (`/admin/unterkuenfte`, nur Verwaltung, nichts davon ist
+  oeffentlich): Tabelle `bookings`, Arten in `App\Enums\BookingKind`
+  (Unterkunft, Workaway, Nachtfahrten). `check_out` ist der Abreisetag und
+  selbst keine Nacht. Welche Naechte fehlen, entscheidet allein
+  `App\Support\NightCoverage` – Kalender und Uebersicht lesen beide daraus.
+  "Heute Nacht" rechnet sie in `America/Mexico_City`, nicht in UTC, sonst
+  waere die laufende Nacht abends schon vorbei. Preise stehen wie bezahlt
+  (Betrag + Waehrung) und in Euro-Cent; umgerechnet wird von Hand, kein
+  Kursdienst (gleicher Grund wie bei den Kartenkacheln).
+- Reine Y-m-d-Tage im Frontend mit `formatDay`/`formatPeriod` formatieren,
+  nie mit `formatDate` – das rutscht westlich von Greenwich auf den Vortag.
 - Die Karte ist selbst gerendertes SVG (`RouteMap.tsx`, d3-geo, GeoJSON in
   `resources/js/lib/americas.geo.json` – Mexiko, Mittelamerika, die Karibik
   und Suedamerika; die USA und Kanada bewusst nicht, die Reise beginnt in

@@ -70,6 +70,11 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::put('stationen/{stop}', [Admin\StopController::class, 'update'])->name('stops.update');
         Route::delete('stationen/{stop}', [Admin\StopController::class, 'destroy'])->name('stops.destroy');
 
+        Route::get('unterkuenfte', [Admin\BookingController::class, 'index'])->name('bookings.index');
+        Route::post('unterkuenfte', [Admin\BookingController::class, 'store'])->name('bookings.store');
+        Route::put('unterkuenfte/{booking}', [Admin\BookingController::class, 'update'])->name('bookings.update');
+        Route::delete('unterkuenfte/{booking}', [Admin\BookingController::class, 'destroy'])->name('bookings.destroy');
+
         Route::get('kommentare', [Admin\CommentController::class, 'index'])->name('comments.index');
         Route::delete('kommentare/{comment}', [Admin\CommentController::class, 'destroy'])->name('comments.destroy');
         Route::delete('kommentare', [Admin\CommentController::class, 'bulkDestroy'])->name('comments.bulk-destroy');

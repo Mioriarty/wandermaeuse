@@ -3,12 +3,15 @@
 namespace Database\Seeders;
 
 use App\Enums\BlockType;
+use App\Enums\BookingKind;
+use App\Models\Booking;
 use App\Models\Comment;
 use App\Models\Composition;
 use App\Models\Media;
 use App\Models\Post;
 use App\Models\Stop;
 use App\Models\Subscriber;
+use App\Support\NightCoverage;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
@@ -26,6 +29,7 @@ class DemoTripSeeder extends Seeder
     {
         $stops = $this->seedStops();
         $media = $this->seedMedia();
+        $this->seedBookings($stops);
 
         $lima = $this->post(
             'Die ersten Tage in Lima',
@@ -121,6 +125,44 @@ class DemoTripSeeder extends Seeder
     /**
      * @return array<string, Stop>
      */
+    /**
+     * Ein paar Naechte rund um heute, damit der Kalender der Verwaltung etwas
+     * zeigt: gebucht, eine Nachtfahrt, ein Workaway, eine Luecke und eine
+     * erst geplante Unterkunft. Relativ zu heute, sonst laege alles bald in
+     * der Vergangenheit.
+     *
+     * @param  array<string, Stop>  $stops
+     */
+    private function seedBookings(array $stops): void
+    {
+        $tonight = NightCoverage::tonight();
+
+        $rows = [
+            [BookingKind::Stay, 'Hostel Pariwana', 'cusco', -6, -2, Booking::STATUS_BOOKED, true, '240', 'PEN', 6000],
+            [BookingKind::Stay, 'Casa de la Abuela', 'cusco', -2, 2, Booking::STATUS_BOOKED, false, '320', 'PEN', 8000],
+            [BookingKind::Bus, 'Cruz del Sur, Cusco → Puno', 'cusco', 2, 3, Booking::STATUS_BOOKED, true, '95', 'PEN', 2375],
+            [BookingKind::Workaway, 'Finca am Titicacasee', 'puno', 3, 10, Booking::STATUS_BOOKED, true, '0', 'PEN', 0],
+            // Hier fehlen zwei Naechte - genau das soll die Seite melden.
+            [BookingKind::Stay, 'Hotel Rosario', 'lapaz', 12, 15, Booking::STATUS_PLANNED, false, '84', 'USD', 7800],
+        ];
+
+        foreach ($rows as [$kind, $title, $stop, $from, $until, $status, $paid, $amount, $currency, $eurCents]) {
+            Booking::create([
+                'kind' => $kind,
+                'title' => $title,
+                'stop_id' => $stops[$stop]->id,
+                'location' => "{$stops[$stop]->name}, {$stops[$stop]->country}",
+                'check_in' => $tonight->addDays($from),
+                'check_out' => $tonight->addDays($until),
+                'status' => $status,
+                'paid' => $paid,
+                'price_amount' => $amount,
+                'currency' => $currency,
+                'price_eur_cents' => $eurCents,
+            ]);
+        }
+    }
+
     private function seedStops(): array
     {
         $rows = [
