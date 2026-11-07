@@ -57,5 +57,11 @@ Schedule::call(function () {
         ->update(['ip_hash' => null]);
 })->everyMinute()->name('prune-comment-ip-hashes');
 
+// New comments go to every admin in one mail per tick. Idempotent: a comment
+// is marked once it has been mailed, so a tick without news sends nothing.
+Schedule::command('wandermaeuse:notify-comments')
+    ->everyMinute()
+    ->withoutOverlapping();
+
 // Same reasoning: weekly() would hang on a single minute per week.
 Schedule::command('queue:prune-failed --hours=336')->everyMinute();

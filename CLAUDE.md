@@ -93,7 +93,9 @@ netcup Shared Hosting, kein Root, keine Dauerprozesse:
   `CommentImageService` immer neu als WebP kodiert – nie die Originaldatei
   ablegen, sonst bleiben GPS-Daten und angehängter Code erhalten. Kommentare
   einzeln über Eloquent löschen, nicht per Query, sonst bleiben die Dateien
-  liegen.
+  liegen. Neue Kommentare meldet `wandermaeuse:notify-comments` bei jedem
+  Scheduler-Lauf in einer Mail an alle Admin-Konten; gemeldet ist, was
+  `notified_at` trägt.
 - Newsletter: Double Opt-in ist in Deutschland Pflicht. Unbestätigte Adressen
   dürfen nie eine Kampagne bekommen (`Subscriber::scopeMailable`).
 - Vor dem Commit: `php artisan test` und `npx tsc --noEmit`.
