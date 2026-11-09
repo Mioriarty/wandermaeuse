@@ -50,7 +50,9 @@ Reiseblog auf Laravel 13 + Inertia 3 + React 19 + TypeScript + Tailwind 4.
   nachrechnen, sonst steht die Karte mit Rand im Kasten. Die Karte ist eine
   reine Umrisszeichnung: graue Grenzen, keine Fuellung, kein Hintergrund, kein
   Rahmen, kein Zoom und keine Ortsnamen im Bild. Die Namen stehen in der Liste
-  darunter und als `<title>` an jedem Punkt. **Keine Kartenkacheln von Dritten einbauen** – die
+  darunter und als `<title>` an jedem Punkt. Oeffentlich erscheinen nur
+  Stationen, an denen wir schon angekommen sind (`Stop::started()`, ohne
+  Ankunftsdatum also nicht); nur die Verwaltung sieht die kommenden, grau. **Keine Kartenkacheln von Dritten einbauen** – die
   Datenschutzerklärung sagt ausdrücklich zu, dass die Seite keine fremden
   Server kontaktiert. Das Gleiche gilt für Schriften und eingebettete Videos.
 

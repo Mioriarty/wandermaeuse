@@ -149,7 +149,7 @@ class PostPublishingTest extends TestCase
     public function test_a_logged_in_reader_sees_drafts_flagged_in_the_lists(): void
     {
         $stop = Stop::create([
-            'name' => 'Lima', 'slug' => 'lima', 'country' => 'Peru', 'lat' => -12.0464, 'lng' => -77.0428,
+            'name' => 'Lima', 'slug' => 'lima', 'country' => 'Peru', 'lat' => -12.0464, 'lng' => -77.0428, 'arrived_on' => '2026-02-10',
         ]);
         Post::create([
             'title' => 'Live',
@@ -187,7 +187,7 @@ class PostPublishingTest extends TestCase
     public function test_a_guest_sees_no_drafts_in_the_lists(): void
     {
         $stop = Stop::create([
-            'name' => 'Lima', 'slug' => 'lima', 'country' => 'Peru', 'lat' => -12.0464, 'lng' => -77.0428,
+            'name' => 'Lima', 'slug' => 'lima', 'country' => 'Peru', 'lat' => -12.0464, 'lng' => -77.0428, 'arrived_on' => '2026-02-10',
         ]);
         Post::create([
             'title' => 'Geplant',

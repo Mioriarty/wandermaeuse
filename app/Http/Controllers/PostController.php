@@ -97,7 +97,7 @@ class PostController extends Controller
                 ->map->toPublicProps()
                 ->all(),
             // The whole path, so the reader always sees where this entry sits.
-            'stops' => Stop::orderBy('position')->get()->map->toMapProps()->all(),
+            'stops' => Stop::started()->orderBy('position')->get()->map->toMapProps()->all(),
             'neighbours' => [
                 'previous' => $previous?->toCardProps(),
                 'next' => $next?->toCardProps(),

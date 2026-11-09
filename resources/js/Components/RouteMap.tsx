@@ -50,13 +50,20 @@ export default function RouteMap({ stops, focusStopId = null, onSelect, variant 
         };
     }, [ordered]);
 
-    const routeD = useMemo(
-        () =>
-            points.length < 2
-                ? ''
-                : 'M' + points.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join('L'),
-        [points],
-    );
+    // Oeffentlich kommen nur Stationen an, an denen wir schon waren; nur die
+    // Verwaltung sieht auch die kommenden und zeichnet sie grau. Der Weg
+    // teilt sich an der letzten erreichten Station: bis dahin dunkel, danach
+    // grau.
+    const { pastD, futureD } = useMemo(() => {
+        const lastStarted = points.findLastIndex((p) => p.stop.started);
+        const line = (part: typeof points) =>
+            part.length < 2 ? '' : 'M' + part.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join('L');
+
+        return {
+            pastD: line(points.slice(0, lastStarted + 1)),
+            futureD: line(points.slice(Math.max(lastStarted, 0))),
+        };
+    }, [points]);
 
     const dot = variant === 'compact' ? 4.5 : 5;
     const focusPoint = points.find((p) => p.stop.id === focusStopId);
@@ -97,9 +104,22 @@ export default function RouteMap({ stops, focusStopId = null, onSelect, variant 
                     />
                 ))}
 
-                {routeD && (
+                {futureD && (
                     <path
-                        d={routeD}
+                        d={futureD}
+                        fill="none"
+                        stroke="var(--color-graphite)"
+                        strokeOpacity={0.6}
+                        strokeWidth={2}
+                        strokeDasharray="7 5"
+                        strokeLinejoin="round"
+                        strokeLinecap="round"
+                    />
+                )}
+
+                {pastD && (
+                    <path
+                        d={pastD}
                         fill="none"
                         stroke="var(--color-ink-soft)"
                         strokeWidth={2}
@@ -115,7 +135,7 @@ export default function RouteMap({ stops, focusStopId = null, onSelect, variant 
                             cx={x}
                             cy={y}
                             r={stop.id === focusStopId ? dot * 1.6 : dot}
-                            fill="var(--color-ink)"
+                            fill={stop.started ? 'var(--color-ink)' : 'var(--color-graphite)'}
                         />
                         {/* Ein grosszuegiges unsichtbares Ziel: der Punkt selbst
                             ist auf dem Handy nicht zu treffen. */}
@@ -127,7 +147,7 @@ export default function RouteMap({ stops, focusStopId = null, onSelect, variant 
                             className={onSelect ? 'cursor-pointer' : undefined}
                             onClick={() => onSelect?.(stop)}
                         >
-                            <title>{stop.name}</title>
+                            <title>{stop.started ? stop.name : `${stop.name} (noch nicht erreicht)`}</title>
                         </circle>
                     </g>
                 ))}

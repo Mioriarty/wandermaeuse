@@ -20,7 +20,7 @@ class HomeController extends Controller
             ->take(4)
             ->get();
 
-        $stops = Stop::orderBy('position')->get();
+        $stops = Stop::started()->orderBy('position')->get();
 
         // Das Titelbild wird in der Verwaltung unter "Startseite" gewaehlt;
         // ohne Wahl ist es das Aufmacherfoto des juengsten Eintrags.

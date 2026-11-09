@@ -25,6 +25,8 @@ export type StopProps = {
     /** Leer heisst: nur der Ankunftstag ist bekannt. */
     departedOn: string | null;
     position: number;
+    /** Schon angekommen. Die oeffentliche Seite bekommt nur solche Stationen. */
+    started: boolean;
 };
 
 export type CompositionProps = {

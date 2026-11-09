@@ -12,7 +12,7 @@ class TripController extends Controller
 {
     public function __invoke(): Response
     {
-        $stops = Stop::with(['posts' => fn ($query) => $query->listed(Auth::check())->newestFirst()])
+        $stops = Stop::started()->with(['posts' => fn ($query) => $query->listed(Auth::check())->newestFirst()])
             ->orderBy('position')
             ->get();
 
