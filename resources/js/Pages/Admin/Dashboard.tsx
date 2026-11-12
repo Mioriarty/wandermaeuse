@@ -103,7 +103,7 @@ function NightsNotice({ ahead }: { ahead: NightsAhead }) {
         <Link
             href="/admin/unterkuenfte"
             className={`mb-8 flex flex-wrap items-center justify-between gap-4 border px-5 py-3 text-sm hover:bg-ink hover:text-paper ${
-                open ? 'border-accent bg-paper text-accent' : 'border-hairline bg-paper text-graphite'
+                open ? 'border-error bg-paper text-error' : 'border-hairline bg-paper text-graphite'
             }`}
         >
             <span>

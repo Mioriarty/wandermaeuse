@@ -128,7 +128,7 @@ export default function Stops({ stops }: { stops: Row[] }) {
                                                             });
                                                         }
                                                     }}
-                                                    className="label-xs border border-accent px-3 text-accent hover:bg-accent hover:text-paper"
+                                                    className="label-xs border border-error px-3 text-error hover:bg-error hover:text-paper"
                                                 >
                                                     Löschen
                                                 </button>

@@ -59,7 +59,7 @@ export default function Media({ media }: { media: Paginated }) {
                         <div className="h-full bg-ink" style={{ width: `${upload.progress.percentage ?? 0}%` }} />
                     </div>
                 )}
-                {upload.errors.files && <p className="mt-3 text-sm text-accent">{upload.errors.files}</p>}
+                {upload.errors.files && <p className="mt-3 text-sm text-error">{upload.errors.files}</p>}
             </Panel>
 
             <div className="mt-6 grid grid-cols-2 gap-4 md:grid-cols-4 xl:grid-cols-6">
@@ -103,7 +103,7 @@ export default function Media({ media }: { media: Paginated }) {
                                             router.delete(`/admin/bilder/${image.id}`, { preserveScroll: true });
                                         }
                                     }}
-                                    className="label-xs flex-1 border border-accent py-1 text-accent hover:bg-accent hover:text-paper"
+                                    className="label-xs flex-1 border border-error py-1 text-error hover:bg-error hover:text-paper"
                                 >
                                     Löschen
                                 </button>

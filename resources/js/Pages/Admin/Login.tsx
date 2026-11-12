@@ -50,7 +50,7 @@ export default function Login() {
                         />
                     </label>
 
-                    {errors.email && <p className="text-sm text-accent">{errors.email}</p>}
+                    {errors.email && <p className="text-sm text-error">{errors.email}</p>}
 
                     <label className="label-xs flex items-center gap-2 text-graphite">
                         <input

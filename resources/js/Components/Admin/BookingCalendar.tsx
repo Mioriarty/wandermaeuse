@@ -170,7 +170,7 @@ function NightCell({
             aria-label={`Nacht vom ${formatDay(night.date)}: neue Buchung ab hier`}
             style={flagged && night.state === 'planned' ? { backgroundImage: HATCH } : undefined}
             className={`relative flex flex-col justify-between border-r border-b border-hairline px-2 pt-1.5 pb-1 text-left hover:bg-paper-dim ${
-                flagged && night.state === 'missing' ? 'bg-accent/10' : ''
+                flagged && night.state === 'missing' ? 'bg-error/10' : ''
             } ${isPast ? 'bg-paper-dim/60' : ''}`}
         >
             <span
@@ -181,9 +181,9 @@ function NightCell({
                 {day}
             </span>
             <span className="text-[10px] leading-tight font-medium tracking-wide uppercase">
-                {night.doubleBooked && <span className="text-accent">Doppelt gebucht</span>}
+                {night.doubleBooked && <span className="text-error">Doppelt gebucht</span>}
                 {!night.doubleBooked && flagged && night.state === 'missing' && (
-                    <span className="text-accent">Keine Unterkunft</span>
+                    <span className="text-error">Keine Unterkunft</span>
                 )}
                 {!night.doubleBooked && flagged && night.state === 'planned' && (
                     <span className="text-graphite">Nur geplant</span>

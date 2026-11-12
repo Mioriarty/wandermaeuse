@@ -195,7 +195,7 @@ export default function CommentSection({ postSlug, comments }: Props) {
                             </button>
                         </div>
                     )}
-                    {errors.reply_to && <p className="mt-2 text-sm text-accent">{errors.reply_to}</p>}
+                    {errors.reply_to && <p className="mt-2 text-sm text-error">{errors.reply_to}</p>}
 
                     <textarea
                         ref={bodyRef}
@@ -207,7 +207,7 @@ export default function CommentSection({ postSlug, comments }: Props) {
                         aria-describedby={replyTo ? 'comment-reply-to' : undefined}
                         className="mt-2 w-full resize-y border border-hairline bg-paper px-3 py-2 text-base focus:border-ink focus:outline-none"
                     />
-                    {errors.body && <p className="mt-2 text-sm text-accent">{errors.body}</p>}
+                    {errors.body && <p className="mt-2 text-sm text-error">{errors.body}</p>}
                 </div>
 
                 <div className="hairline-t bg-paper px-5 py-4 sm:px-6">
@@ -246,9 +246,9 @@ export default function CommentSection({ postSlug, comments }: Props) {
                         </label>
                     )}
 
-                    {imageNotice && <p className="mt-2 text-sm text-accent">{imageNotice}</p>}
+                    {imageNotice && <p className="mt-2 text-sm text-error">{imageNotice}</p>}
                     {imageErrors.map((message) => (
-                        <p key={message} className="mt-2 text-sm text-accent">
+                        <p key={message} className="mt-2 text-sm text-error">
                             {message}
                         </p>
                     ))}
@@ -466,7 +466,7 @@ function Field({
                 onChange={(e) => onChange(e.target.value)}
                 className="mt-2 w-full border border-hairline bg-paper px-3 py-2 text-base focus:border-ink focus:outline-none"
             />
-            {error && <p className="mt-2 text-sm text-accent">{error}</p>}
+            {error && <p className="mt-2 text-sm text-error">{error}</p>}
         </div>
     );
 }

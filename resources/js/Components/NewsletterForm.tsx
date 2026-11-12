@@ -52,7 +52,7 @@ export default function NewsletterForm({ compact = false }: { compact?: boolean 
                     onChange={(e) => setData('email', e.target.value)}
                     className="mt-2 w-full border border-hairline bg-paper px-3 py-2 text-base focus:border-ink focus:outline-none"
                 />
-                {errors.email && <p className="mt-2 text-sm text-accent">{errors.email}</p>}
+                {errors.email && <p className="mt-2 text-sm text-error">{errors.email}</p>}
             </div>
 
             <div aria-hidden className="absolute left-[-9999px] h-0 w-0 overflow-hidden">

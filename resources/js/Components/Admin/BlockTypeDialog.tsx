@@ -71,13 +71,13 @@ export default function BlockTypeDialog({ title, options, onPick, onClose, curre
                             onClick={() => (lossy ? setPending(option) : pick(option))}
                             className={`flex flex-col items-center gap-2 border px-2 pt-4 pb-3 text-center transition-colors disabled:cursor-default disabled:opacity-40 ${
                                 pending?.value === option.value
-                                    ? 'border-accent'
+                                    ? 'border-error'
                                     : 'border-hairline hover:border-ink disabled:hover:border-hairline'
                             }`}
                         >
                             <Sketch type={option.value} />
                             <span className="text-sm">{option.label}</span>
-                            <span className={`label-xs min-h-4 ${lossy ? 'text-accent' : 'text-graphite'}`}>
+                            <span className={`label-xs min-h-4 ${lossy ? 'text-error' : 'text-graphite'}`}>
                                 {isCurrent ? 'aktuell' : lossy ? 'Inhalt fällt weg' : ''}
                             </span>
                         </button>

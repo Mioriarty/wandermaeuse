@@ -68,7 +68,7 @@ export default function AdminLayout({ children, title, actions }: Props) {
                 </p>
             )}
             {props.flash?.error && (
-                <p role="alert" className="border-b border-accent bg-accent px-6 py-2 text-sm text-paper">
+                <p role="alert" className="border-b border-error bg-error px-6 py-2 text-sm text-paper">
                     {props.flash.error}
                 </p>
             )}

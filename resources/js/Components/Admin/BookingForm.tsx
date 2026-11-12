@@ -79,7 +79,7 @@ export default function BookingForm({ form, editing, kinds, stops, onSubmit, onC
                         </button>
                     ))}
                 </div>
-                {errors.kind && <span className="mt-1 block text-xs text-accent">{errors.kind}</span>}
+                {errors.kind && <span className="mt-1 block text-xs text-error">{errors.kind}</span>}
             </div>
 
             <Field label={transport ? 'Verbindung' : 'Name'} error={errors.title}>
@@ -193,7 +193,7 @@ export default function BookingForm({ form, editing, kinds, stops, onSubmit, onC
                         Bezahlt
                     </label>
                 </div>
-                {errors.status && <span className="mt-1 block text-xs text-accent">{errors.status}</span>}
+                {errors.status && <span className="mt-1 block text-xs text-error">{errors.status}</span>}
             </div>
 
             <div className="grid grid-cols-[1fr_6rem] gap-3">

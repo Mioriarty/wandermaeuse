@@ -9,7 +9,7 @@ export default function NewsletterStatus({ heading, message, ok }: Props) {
             <Head title={heading} />
 
             <div className="mx-auto max-w-2xl px-5 pt-16 pb-24 sm:px-8 sm:pt-28">
-                <p className="label-xs" style={{ color: ok ? undefined : 'var(--color-accent)' }}>
+                <p className="label-xs" style={{ color: ok ? undefined : 'var(--color-error)' }}>
                     Newsletter
                 </p>
                 <h1 className="mt-4 font-display text-[clamp(2.25rem,6vw,4rem)] leading-[1]">

@@ -76,7 +76,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
                 </p>
             )}
             {flash?.error && (
-                <p role="alert" className="bg-accent px-5 py-3 text-center text-sm text-paper sm:px-8">
+                <p role="alert" className="bg-error px-5 py-3 text-center text-sm text-paper sm:px-8">
                     {flash.error}
                 </p>
             )}

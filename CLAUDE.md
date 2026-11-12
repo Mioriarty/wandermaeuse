@@ -85,7 +85,9 @@ netcup Shared Hosting, kein Root, keine Dauerprozesse:
   Querscrollbalken, Tap-Ziele ≥ 44px). Die Verwaltung ist bewusst
   Desktop-first.
 - Kein `border-radius`, Hairlines statt Schatten, Farbe nur sparsam über
-  `--color-accent`. Die Fotos tragen die Farbe, der Hintergrund ist fast weiß.
+  `--color-accent` (Lagune, Tuerkis-Petrol). Die Fotos tragen die Farbe, der
+  Hintergrund ist fast weiß. Fehler, Warnungen und Loeschen laufen dagegen
+  ueber `--color-error` (Terrakotta), nie ueber den Akzent.
 - Überschriften laufen in `font-display` (Bodoni Moda, eine Didone mit starkem
   Strichkontrast). Geladen werden nur 400 und 500 – **kein `font-bold`
   darauf**, das wäre ein vom Browser gefälschtes Fett. Alles Funktionale

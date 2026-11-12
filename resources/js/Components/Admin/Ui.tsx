@@ -26,7 +26,7 @@ export function Button({
     const styles = {
         primary: 'bg-ink text-paper hover:bg-accent',
         ghost: 'border border-hairline text-ink hover:bg-ink hover:text-paper',
-        danger: 'border border-accent text-accent hover:bg-accent hover:text-paper',
+        danger: 'border border-error text-error hover:bg-error hover:text-paper',
     }[variant];
 
     return (
@@ -57,7 +57,7 @@ export function Field({
             <span className="label-xs block text-graphite">{label}</span>
             <span className="mt-2 block">{children}</span>
             {hint && <span className="mt-1 block text-xs text-graphite">{hint}</span>}
-            {error && <span className="mt-1 block text-xs text-accent">{error}</span>}
+            {error && <span className="mt-1 block text-xs text-error">{error}</span>}
         </label>
     );
 }

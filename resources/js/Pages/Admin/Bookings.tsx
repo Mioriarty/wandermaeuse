@@ -296,11 +296,11 @@ function AheadPanel({ ahead, onFill }: { ahead: NightsAhead; onFill: (gap: Night
                             style={state === 'planned' ? { backgroundImage: HATCH } : undefined}
                             className={`h-8 flex-1 ${
                                 state === 'missing'
-                                    ? 'bg-accent'
+                                    ? 'bg-error'
                                     : state === 'planned'
                                       ? 'border border-ink'
                                       : 'bg-ink'
-                            } ${isDouble(date) ? 'outline-2 -outline-offset-4 outline-accent' : ''}`}
+                            } ${isDouble(date) ? 'outline-2 -outline-offset-4 outline-error' : ''}`}
                         />
                     );
                 })}
@@ -317,7 +317,7 @@ function AheadPanel({ ahead, onFill }: { ahead: NightsAhead; onFill: (gap: Night
                     <p className="mt-4 text-sm">
                         {[
                             ahead.missing > 0 && (
-                                <strong key="m" className="text-accent">
+                                <strong key="m" className="text-error">
                                     {formatNights(ahead.missing)} ohne Unterkunft
                                 </strong>
                             ),
@@ -336,7 +336,7 @@ function AheadPanel({ ahead, onFill }: { ahead: NightsAhead; onFill: (gap: Night
                                     type="button"
                                     onClick={() => onFill(gap)}
                                     className={`min-h-10 border px-3 text-left text-sm hover:bg-ink hover:text-paper ${
-                                        gap.state === 'missing' ? 'border-accent text-accent' : 'border-hairline'
+                                        gap.state === 'missing' ? 'border-error text-error' : 'border-hairline'
                                     }`}
                                 >
                                     {formatPeriod(gap.from, gap.until)} · {formatNights(gap.nights)}
@@ -349,7 +349,7 @@ function AheadPanel({ ahead, onFill }: { ahead: NightsAhead; onFill: (gap: Night
                         {ahead.conflicts.map((conflict) => (
                             <li
                                 key={`c${conflict.from}`}
-                                className="flex min-h-10 items-center border border-accent px-3 text-sm"
+                                className="flex min-h-10 items-center border border-error px-3 text-sm"
                             >
                                 {formatPeriod(conflict.from, conflict.until)} · doppelt gebucht
                             </li>
@@ -382,7 +382,7 @@ function Legend() {
                 <span className="inline-block h-3 w-6 border border-dashed border-ink" /> geplant
             </span>
             <span className="flex items-center gap-2">
-                <span className="inline-block h-3 w-6 bg-accent/10" /> keine Unterkunft
+                <span className="inline-block h-3 w-6 bg-error/10" /> keine Unterkunft
             </span>
         </div>
     );
@@ -470,7 +470,7 @@ function BookingTable({
                                 </span>
                                 <span
                                     className={`block text-xs ${
-                                        b.paid || b.status === 'planned' ? 'text-graphite' : 'text-accent'
+                                        b.paid || b.status === 'planned' ? 'text-graphite' : 'text-error'
                                     }`}
                                 >
                                     {b.paid ? 'bezahlt' : b.status === 'planned' ? '' : 'noch offen'}

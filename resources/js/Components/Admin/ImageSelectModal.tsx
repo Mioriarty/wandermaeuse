@@ -588,7 +588,7 @@ export default function ImageSelectModal({ title, max, initial, slotLabels, onAp
                         </ul>
                     )}
                     {notice && (
-                        <p role="status" className="mt-1 text-xs text-accent">
+                        <p role="status" className="mt-1 text-xs text-error">
                             {notice}
                         </p>
                     )}
@@ -712,7 +712,7 @@ function UploadTile({
             {entry.preview && <img src={entry.preview} alt="" className="h-full w-full object-cover opacity-50" />}
             {entry.error ? (
                 <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-paper/85 p-2 text-center">
-                    <p className="text-xs text-accent">{entry.error}</p>
+                    <p className="text-xs text-error">{entry.error}</p>
                     <p className="max-w-full truncate text-xs text-graphite">{entry.file.name}</p>
                     <div className="flex gap-1">
                         <button type="button" onClick={onRetry} className="label-xs border border-hairline px-2 py-1 hover:bg-ink hover:text-paper">
