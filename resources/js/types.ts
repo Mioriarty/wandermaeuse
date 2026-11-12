@@ -27,6 +27,8 @@ export type StopProps = {
     position: number;
     /** Schon angekommen. Die oeffentliche Seite bekommt nur solche Stationen. */
     started: boolean;
+    /** Hier sind wir heute. Hoechstens eine Station, unterwegs keine. */
+    current: boolean;
 };
 
 export type CompositionProps = {

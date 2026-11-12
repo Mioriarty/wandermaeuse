@@ -4,6 +4,7 @@ import AdminLayout from '@/Layouts/AdminLayout';
 import RouteMap from '@/Components/RouteMap';
 import { Button, Field, Panel, inputClass } from '@/Components/Admin/Ui';
 import { formatStay } from '@/lib/format';
+import { mapCountryNames } from '@/lib/mapCountries';
 import type { StopProps } from '@/types';
 
 type Row = StopProps & { note: string | null; postsCount: number };
@@ -159,12 +160,20 @@ export default function Stops({ stops }: { stops: Row[] }) {
                         </Field>
 
                         <Field label="Land" error={form.errors.country}>
+                            {/* Die Namen der Karte als Vorschlag: nur ein Land,
+                                das die Karte kennt, wird dort ausgefuellt. */}
                             <input
                                 className={inputClass}
                                 value={form.data.country}
                                 onChange={(e) => form.setData('country', e.target.value)}
+                                list="map-countries"
                                 required
                             />
+                            <datalist id="map-countries">
+                                {mapCountryNames.map((name) => (
+                                    <option key={name} value={name} />
+                                ))}
+                            </datalist>
                         </Field>
 
                         <div className="grid grid-cols-2 gap-3">

@@ -48,11 +48,19 @@ Reiseblog auf Laravel 13 + Inertia 3 + React 19 + TypeScript + Tailwind 4.
   Mexiko). Das 4:5 des viewBox ist genau das Seitenverhaeltnis dieser
   Landmasse in Mercator: wer Laender hinzunimmt oder entfernt, muss es
   nachrechnen, sonst steht die Karte mit Rand im Kasten. Die Karte ist eine
-  reine Umrisszeichnung: graue Grenzen, keine Fuellung, kein Hintergrund, kein
-  Rahmen, kein Zoom und keine Ortsnamen im Bild. Die Namen stehen in der Liste
-  darunter und als `<title>` an jedem Punkt. Oeffentlich erscheinen nur
-  Stationen, an denen wir schon angekommen sind (`Stop::started()`, ohne
-  Ankunftsdatum also nicht); nur die Verwaltung sieht die kommenden, grau. **Keine Kartenkacheln von Dritten einbauen** – die
+  Umrisszeichnung: graue Grenzen, kein Hintergrund, kein Rahmen, kein Zoom
+  und keine Ortsnamen im Bild. Die Namen stehen in der Liste darunter und als
+  `<title>` an jedem Punkt. Oeffentlich erscheinen nur Stationen, an denen wir
+  schon angekommen sind (`Stop::started()`, ohne Ankunftsdatum also nicht);
+  nur die Verwaltung sieht die kommenden, grau. Gefuellt werden nur besuchte
+  Laender (`--color-map-visited`) und das, in dem wir gerade sind
+  (`--color-map-current`); der Punkt, an dem wir sind (`Stop::current()`),
+  steht im Akzent. Nicaragua und Costa Rica sind zu klein fuer ihre vielen
+  Stationen und haben eine feste Nebenkarte im Pazifik unter Mexiko, mit
+  feineren Umrissen und den Seen aus `nicaragua-costarica.geo.json` (Natural
+  Earth 10m; Ringe im Uhrzeigersinn, wie d3 sie erwartet). Das Land einer
+  Station ist freier Text und wird ueber den Namen der Karte zugeordnet
+  (`mapCountries.ts`). **Keine Kartenkacheln von Dritten einbauen** – die
   Datenschutzerklärung sagt ausdrücklich zu, dass die Seite keine fremden
   Server kontaktiert. Das Gleiche gilt für Schriften und eingebettete Videos.
 

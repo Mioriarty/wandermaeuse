@@ -82,4 +82,28 @@ class StopVisibilityTest extends TestCase
                 ->where('stops.2.started', false)
                 ->where('stops.3.started', false));
     }
+
+    public function test_the_last_reached_stop_is_where_we_are(): void
+    {
+        $this->get('/reise')->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('stops.0.current', false)
+            ->where('stops.1.current', true));
+    }
+
+    public function test_after_the_departure_day_no_stop_is_where_we_are(): void
+    {
+        Stop::where('name', 'Puebla')->update(['departed_on' => '2026-11-06']);
+
+        $this->get('/reise')->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('stops.0.current', false)
+            ->where('stops.1.current', false));
+    }
+
+    public function test_on_the_departure_day_we_are_still_there(): void
+    {
+        Stop::where('name', 'Puebla')->update(['departed_on' => '2026-11-07']);
+
+        $this->get('/reise')->assertInertia(fn (AssertableInertia $page) => $page
+            ->where('stops.1.current', true));
+    }
 }

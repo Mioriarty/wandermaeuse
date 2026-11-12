@@ -47,6 +47,23 @@ class Stop extends Model
     }
 
     /**
+     * Wo wir heute sind: die zuletzt erreichte Station, solange ihr Abreisetag
+     * nicht vorbei ist. Danach sind wir unterwegs und die Karte markiert
+     * nichts, bis die naechste Station ankommt. Einmal pro Anfrage gerechnet,
+     * jede Station fragt beim Umwandeln fuer die Karte danach.
+     */
+    public static function current(): ?self
+    {
+        return once(function () {
+            $latest = static::started()->orderByDesc('arrived_on')->orderByDesc('position')->first();
+
+            return $latest && ($latest->departed_on === null || $latest->departed_on->gte(NightCoverage::tonight()))
+                ? $latest
+                : null;
+        });
+    }
+
+    /**
      * The payload the map component consumes.
      *
      * @return array<string, mixed>
@@ -64,6 +81,7 @@ class Stop extends Model
             'departedOn' => $this->departed_on?->toDateString(),
             'position' => $this->position,
             'started' => $this->hasStarted(),
+            'current' => static::current()?->is($this) ?? false,
         ];
     }
 }
