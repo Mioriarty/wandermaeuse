@@ -59,8 +59,9 @@ Reiseblog auf Laravel 13 + Inertia 3 + React 19 + TypeScript + Tailwind 4.
   Stationen und haben eine feste Nebenkarte im Pazifik unter Mexiko, mit
   feineren Umrissen und den Seen aus `nicaragua-costarica.geo.json` (Natural
   Earth 10m; Ringe im Uhrzeigersinn, wie d3 sie erwartet). Das Land einer
-  Station ist freier Text und wird ueber den Namen der Karte zugeordnet
-  (`mapCountries.ts`). **Keine Kartenkacheln von Dritten einbauen** – die
+  Station ist freier Text und wird ueber den Namen zugeordnet
+  (`mapCountries.ts`); wir schreiben die Laender auf Spanisch ("México"),
+  die Karte kennt sie deutsch, spanisch und englisch. **Keine Kartenkacheln von Dritten einbauen** – die
   Datenschutzerklärung sagt ausdrücklich zu, dass die Seite keine fremden
   Server kontaktiert. Das Gleiche gilt für Schriften und eingebettete Videos.
 
