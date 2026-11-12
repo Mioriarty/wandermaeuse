@@ -83,7 +83,7 @@ export default function BlogShow({
                         <h2 className="label-xs hairline-t py-3 text-graphite">
                             {post.stop ? `Station: ${post.stop.name}` : 'Unsere Route'}
                         </h2>
-                        <RouteMap stops={stops} focusStopId={post.stop?.id ?? null} variant="compact" />
+                        <RouteMap stops={stops} focusStopId={post.stop?.id ?? null} variant="compact" pulseAtFocus />
                     </section>
                 )}
 

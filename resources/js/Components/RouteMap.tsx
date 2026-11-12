@@ -103,6 +103,13 @@ type Props = {
     onSelect?: (stop: StopProps) => void;
     /** `compact` is the band above a blog entry, `full` the standalone map. */
     variant?: 'full' | 'compact';
+    /**
+     * Der Ring pulsiert am hervorgehobenen Halt statt dort, wo wir gerade
+     * sind - ueber einem aelteren Eintrag geht es um dessen Ort. Ist das
+     * nicht die heutige Station, pulsiert er schwarz; die heutige bleibt im
+     * Akzent, nur ohne Ring.
+     */
+    pulseAtFocus?: boolean;
 };
 
 /**
@@ -115,7 +122,7 @@ type Props = {
  * in der Liste darunter, nicht im Bild; jeder Punkt traegt seinen Namen nur
  * als <title>, also im Tooltip und fuer den Screenreader.
  */
-export default function RouteMap({ stops, focusStopId = null, onSelect, variant = 'full' }: Props) {
+export default function RouteMap({ stops, focusStopId = null, onSelect, variant = 'full', pulseAtFocus = false }: Props) {
     const clipId = useId();
     const ordered = useMemo(() => [...stops].sort((a, b) => a.position - b.position), [stops]);
 
@@ -152,6 +159,8 @@ export default function RouteMap({ stops, focusStopId = null, onSelect, variant 
 
     const dot = variant === 'compact' ? 4.5 : 5;
     const focusStop = ordered.find((s) => s.id === focusStopId);
+    // Ohne Ort im Eintrag bleibt der Ring, wo wir gerade sind.
+    const pulseStopId = pulseAtFocus && focusStop ? focusStop.id : ordered.find((s) => s.current)?.id;
 
     const renderCountries = (list: typeof countryShapes) =>
         list.map((country) => (
@@ -199,13 +208,13 @@ export default function RouteMap({ stops, focusStopId = null, onSelect, variant 
 
             return (
                 <g key={stop.id}>
-                    {stop.current && (
+                    {stop.id === pulseStopId && (
                         <circle
                             cx={x}
                             cy={y}
                             r={r}
                             fill="none"
-                            stroke="var(--color-accent)"
+                            stroke={stop.current ? 'var(--color-accent)' : 'var(--color-ink)'}
                             strokeWidth={1.5}
                             className="map-here"
                         />
