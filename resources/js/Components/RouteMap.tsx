@@ -271,6 +271,12 @@ export default function RouteMap({ stops, focusStopId = null, onSelect, variant 
                     <clipPath id={clipId}>
                         <rect x={INSET.x} y={INSET.y} width={INSET.w} height={INSET.h} />
                     </clipPath>
+                    {/* Der Weg setzt am kleinen Kasten aus: darin stehen nur die
+                        Umrisse, die Route erzaehlt die Nebenkarte. */}
+                    <mask id={`${clipId}-box`} maskUnits="userSpaceOnUse" x={0} y={0} width={W} height={H}>
+                        <rect x={0} y={0} width={W} height={H} fill="white" />
+                        <rect x={boxLeft} y={boxTop} width={boxRight - boxLeft} height={boxBottom - boxTop} fill="black" />
+                    </mask>
                 </defs>
 
                 {/* Die Grenzen bleiben im Grau der Unterzeilen und treten damit
@@ -285,7 +291,7 @@ export default function RouteMap({ stops, focusStopId = null, onSelect, variant 
                     <line x1={boxRight} y1={boxBottom} x2={INSET.x + INSET.w} y2={INSET.y} strokeOpacity={0.6} />
                 </g>
 
-                {renderRoute(route)}
+                <g mask={`url(#${clipId}-box)`}>{renderRoute(route)}</g>
                 {renderPoints(points)}
 
                 <rect
