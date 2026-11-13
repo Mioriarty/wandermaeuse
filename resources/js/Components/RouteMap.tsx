@@ -4,6 +4,7 @@ import type { Feature, FeatureCollection } from 'geojson';
 import land from '@/lib/americas.geo.json';
 import detail from '@/lib/nicaragua-costarica.geo.json';
 import { countryIso } from '@/lib/mapCountries';
+import { placeKey } from '@/lib/places';
 import type { StopProps } from '@/types';
 
 const W = 800;
@@ -202,19 +203,37 @@ export default function RouteMap({ stops, focusStopId = null, onSelect, variant 
         </>
     );
 
-    const renderPoints = (list: Point[]) =>
-        list.map(({ stop, x, y }) => {
-            const r = stop.id === focusStopId ? dot * 1.6 : stop.current ? dot * 1.3 : dot;
+    // Mehrere Besuche desselben Ortes sind ein Punkt - der Weg laeuft
+    // trotzdem durch jeden Besuch. Der Punkt zeigt den wichtigsten Stand
+    // seiner Besuche: heute vor erreicht vor geplant.
+    const renderPoints = (list: Point[]) => {
+        const places = new Map<string, Point[]>();
+        for (const point of list) {
+            const key = placeKey(point.stop);
+            places.set(key, [...(places.get(key) ?? []), point]);
+        }
+
+        return [...places].map(([key, visits]) => {
+            const { x, y } = visits[0];
+            const stops = visits.map((v) => v.stop);
+            const name = stops[0].name;
+            const current = stops.find((s) => s.current);
+            const focused = stops.find((s) => s.id === focusStopId);
+            const pulsing = stops.find((s) => s.id === pulseStopId);
+            const reached = stops.filter((s) => s.started);
+            // Getippt wird der Besuch, um den es gerade geht, sonst der juengste.
+            const target = focused ?? current ?? reached.at(-1) ?? stops[0];
+            const r = focused ? dot * 1.6 : current ? dot * 1.3 : dot;
 
             return (
-                <g key={stop.id}>
-                    {stop.id === pulseStopId && (
+                <g key={key}>
+                    {pulsing && (
                         <circle
                             cx={x}
                             cy={y}
                             r={r}
                             fill="none"
-                            stroke={stop.current ? 'var(--color-accent)' : 'var(--color-ink)'}
+                            stroke={pulsing.current ? 'var(--color-accent)' : 'var(--color-ink)'}
                             strokeWidth={1.5}
                             className="map-here"
                         />
@@ -224,9 +243,9 @@ export default function RouteMap({ stops, focusStopId = null, onSelect, variant 
                         cy={y}
                         r={r}
                         fill={
-                            stop.current
+                            current
                                 ? 'var(--color-accent)'
-                                : stop.started
+                                : reached.length > 0
                                   ? 'var(--color-ink)'
                                   : 'var(--color-graphite)'
                         }
@@ -239,19 +258,22 @@ export default function RouteMap({ stops, focusStopId = null, onSelect, variant 
                         r={16}
                         fill="transparent"
                         className={onSelect ? 'cursor-pointer' : undefined}
-                        onClick={() => onSelect?.(stop)}
+                        onClick={() => onSelect?.(target)}
                     >
                         <title>
-                            {stop.current
-                                ? `${stop.name} (hier sind wir gerade)`
-                                : stop.started
-                                  ? stop.name
-                                  : `${stop.name} (noch nicht erreicht)`}
+                            {current
+                                ? `${name} (hier sind wir gerade)`
+                                : reached.length > 1
+                                  ? `${name} (${reached.length} Besuche)`
+                                  : reached.length === 1
+                                    ? name
+                                    : `${name} (noch nicht erreicht)`}
                         </title>
                     </circle>
                 </g>
             );
         });
+    };
 
     // Die Karte reicht von Nordmexiko bis Feuerland und ist damit deutlich
     // hoeher als breit: ueber die volle Containerbreite waere sie auf einem

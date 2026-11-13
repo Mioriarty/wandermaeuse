@@ -3,7 +3,8 @@ import PublicLayout from '@/Layouts/PublicLayout';
 import DraftFlag from '@/Components/DraftFlag';
 import RouteMap from '@/Components/RouteMap';
 import { formatStay } from '@/lib/format';
-import { useState } from 'react';
+import { placeKey, visitNumbers } from '@/lib/places';
+import { useMemo, useState } from 'react';
 import type { StopProps } from '@/types';
 
 type StopWithPosts = StopProps & {
@@ -13,13 +14,17 @@ type StopWithPosts = StopProps & {
 
 export default function Reise({ stops }: { stops: StopWithPosts[] }) {
     const [focus, setFocus] = useState<number | null>(null);
+    // Ein Ort, den wir mehrmals besuchen, steht fuer jeden Besuch in der
+    // Liste, zaehlt aber nur einmal als Station.
+    const visits = useMemo(() => visitNumbers(stops), [stops]);
+    const placeCount = useMemo(() => new Set(stops.map(placeKey)).size, [stops]);
 
     return (
         <PublicLayout>
             <Head title="Die Route" />
 
             <div className="mx-auto max-w-6xl px-5 pt-12 sm:px-8 sm:pt-20">
-                <p className="label-xs text-graphite">{stops.length} Stationen</p>
+                <p className="label-xs text-graphite">{placeCount} Stationen</p>
                 <h1 className="mt-4 font-display text-[clamp(2.5rem,8vw,5.5rem)] leading-[1]">
                     Die Route
                 </h1>
@@ -51,6 +56,9 @@ export default function Reise({ stops }: { stops: StopWithPosts[] }) {
                         <div className="label-xs flex gap-4 text-graphite sm:col-span-3 sm:block">
                             <span className="tabular-nums">{String(i + 1).padStart(2, '0')}</span>
                             <span className="sm:mt-1 sm:block">{formatStay(stop)}</span>
+                            {(visits.get(stop.id) ?? 1) > 1 && (
+                                <span className="sm:mt-1 sm:block">{visits.get(stop.id)}. Besuch</span>
+                            )}
                         </div>
                         <div className="sm:col-span-9">
                             <h2 className="font-display text-2xl font-medium leading-tight sm:text-3xl">

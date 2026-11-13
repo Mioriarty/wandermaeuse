@@ -39,7 +39,8 @@ class HomeController extends Controller
             'intro' => [
                 'kilometres' => null,
                 'countries' => $stops->pluck('country')->unique()->count(),
-                'stopCount' => $stops->count(),
+                // Orte, nicht Besuche: dreimal San José ist eine Station.
+                'stopCount' => $stops->unique(fn (Stop $stop) => $stop->placeKey())->count(),
             ],
         ]);
     }

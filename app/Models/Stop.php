@@ -64,6 +64,15 @@ class Stop extends Model
     }
 
     /**
+     * Derselbe Ort bei mehreren Besuchen: gleicher Name an gleicher Stelle.
+     * Muss zu placeKey() in resources/js/lib/places.ts passen.
+     */
+    public function placeKey(): string
+    {
+        return mb_strtolower(trim($this->name)).'|'.$this->lat.'|'.$this->lng;
+    }
+
+    /**
      * The payload the map component consumes.
      *
      * @return array<string, mixed>

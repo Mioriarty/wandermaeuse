@@ -84,8 +84,27 @@ class StopController extends Controller
             'departed_on.after_or_equal' => 'Die Abreise liegt vor der Ankunft.',
         ]);
 
-        $data['slug'] = $data['slug'] ?: Str::slug($data['name']);
+        $data['slug'] = $data['slug'] ?: $this->freeSlug(Str::slug($data['name']), $stop);
 
         return $data;
+    }
+
+    /**
+     * Einen Ort besuchen wir manchmal mehrmals - jeder Besuch ist eine eigene
+     * Station, braucht aber einen eigenen Anker auf der Routenseite:
+     * san-jose, san-jose-2, san-jose-3.
+     */
+    private function freeSlug(string $base, ?Stop $stop): string
+    {
+        $taken = Stop::where('slug', 'like', "{$base}%")
+            ->when($stop, fn ($query) => $query->whereKeyNot($stop->id))
+            ->pluck('slug');
+
+        $slug = $base;
+        for ($n = 2; $taken->contains($slug); $n++) {
+            $slug = "{$base}-{$n}";
+        }
+
+        return $slug;
     }
 }

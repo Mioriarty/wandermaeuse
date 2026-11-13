@@ -5,6 +5,7 @@ import RouteMap from '@/Components/RouteMap';
 import { Button, Field, Panel, inputClass } from '@/Components/Admin/Ui';
 import { formatStay } from '@/lib/format';
 import { mapCountryNames } from '@/lib/mapCountries';
+import { visitNumbers } from '@/lib/places';
 import type { StopProps } from '@/types';
 
 type Row = StopProps & { note: string | null; postsCount: number };
@@ -37,6 +38,17 @@ export default function Stops({ stops }: { stops: Row[] }) {
             note: stop.note ?? '',
         });
     };
+
+    // Ein weiterer Besuch an einem Ort, an dem wir schon waren: dieselbe
+    // Stelle als neue Station am Ende der Route, nur die Daten fehlen noch.
+    const revisit = (stop: Row) => {
+        setEditingId(null);
+        form.setData({ ...BLANK, name: stop.name, country: stop.country, lat: String(stop.lat), lng: String(stop.lng) });
+        form.clearErrors();
+        document.getElementById('stop-arrival')?.focus();
+    };
+
+    const visits = visitNumbers(stops);
 
     const reset = () => {
         setEditingId(null);
@@ -95,6 +107,9 @@ export default function Stops({ stops }: { stops: Row[] }) {
                                         <td className="px-4 py-3">
                                             <span className="font-medium">{stop.name}</span>
                                             <span className="ml-2 text-graphite">{stop.country}</span>
+                                            {(visits.get(stop.id) ?? 1) > 1 && (
+                                                <span className="ml-2 text-graphite">· {visits.get(stop.id)}. Besuch</span>
+                                            )}
                                         </td>
                                         <td className="px-4 py-3 text-graphite tabular-nums">
                                             {formatStay(stop) || '–'}
@@ -118,6 +133,14 @@ export default function Stops({ stops }: { stops: Row[] }) {
                                                     className="label-xs border border-hairline px-3 hover:bg-ink hover:text-paper"
                                                 >
                                                     Bearbeiten
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => revisit(stop)}
+                                                    title="Denselben Ort als weitere Station ans Ende der Route setzen"
+                                                    className="label-xs border border-hairline px-3 hover:bg-ink hover:text-paper"
+                                                >
+                                                    Nochmal hin
                                                 </button>
                                                 <button
                                                     type="button"
@@ -205,6 +228,7 @@ export default function Stops({ stops }: { stops: Row[] }) {
                         <div className="grid grid-cols-2 gap-3">
                             <Field label="Ankunft" error={form.errors.arrived_on}>
                                 <input
+                                    id="stop-arrival"
                                     type="date"
                                     className={inputClass}
                                     value={form.data.arrived_on}

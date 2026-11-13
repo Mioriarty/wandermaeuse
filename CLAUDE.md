@@ -61,7 +61,11 @@ Reiseblog auf Laravel 13 + Inertia 3 + React 19 + TypeScript + Tailwind 4.
   Earth 10m; Ringe im Uhrzeigersinn, wie d3 sie erwartet). Das Land einer
   Station ist freier Text und wird ueber den Namen zugeordnet
   (`mapCountries.ts`); wir schreiben die Laender auf Spanisch ("México"),
-  die Karte kennt sie deutsch, spanisch und englisch. **Keine Kartenkacheln von Dritten einbauen** – die
+  die Karte kennt sie deutsch, spanisch und englisch. Einen Ort mehrmals zu
+  besuchen heisst: mehrere Stationen mit gleichem Namen und gleichen
+  Koordinaten ("Nochmal hin" in der Verwaltung), Slugs `san-jose`,
+  `san-jose-2`, … Die Karte zeichnet sie als einen Punkt, gezaehlt werden
+  Orte, nicht Besuche (`placeKey` in PHP und `places.ts`). **Keine Kartenkacheln von Dritten einbauen** – die
   Datenschutzerklärung sagt ausdrücklich zu, dass die Seite keine fremden
   Server kontaktiert. Das Gleiche gilt für Schriften und eingebettete Videos.
 
